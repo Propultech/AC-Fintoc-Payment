@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Transaction Repository -->
+    <preference for="Fintoc\Payment\Api\TransactionRepositoryInterface" type="Fintoc\Payment\Model\TransactionRepository" />
+
+    <!-- Transaction Service -->
+    <preference for="Fintoc\Payment\Api\TransactionServiceInterface" type="Fintoc\Payment\Service\TransactionService" />
+
+    <!-- Logger Service -->
+    <preference for="Fintoc\Payment\Api\LoggerServiceInterface" type="Fintoc\Payment\Service\LoggerService" />
+
+    <!-- Configuration Service -->
+    <preference for="Fintoc\Payment\Api\ConfigurationServiceInterface" type="Fintoc\Payment\Service\ConfigurationService" />
+
+    <!-- Data Interfaces -->
+    <preference for="Fintoc\Payment\Api\Data\TransactionInterface" type="Fintoc\Payment\Model\Transaction" />
+    <preference for="Fintoc\Payment\Api\Data\TransactionSearchResultsInterface" type="Fintoc\Payment\Model\TransactionSearchResults" />
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="fintoc_payment_grid_data_source" xsi:type="string">Fintoc\Payment\Model\ResourceModel\Payment\Grid\Collection</item>
+                <item name="fintoc_payment_transactions_grid_data_source" xsi:type="string">Fintoc\Payment\Model\ResourceModel\Transaction\Grid\Collection</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Fintoc\Payment\Model\ResourceModel\Payment\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">sales_order_payment</argument>
+            <argument name="resourceModel" xsi:type="string">Magento\Sales\Model\ResourceModel\Order\Payment</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="Fintoc\Payment\Model\ResourceModel\Transaction\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">fintoc_payment_transactions</argument>
+            <argument name="resourceModel" xsi:type="string">Fintoc\Payment\Model\ResourceModel\Transaction</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Checkout\Model\CompositeConfigProvider">
+        <arguments>
+            <argument name="configProviders" xsi:type="array">
+                <item name="fintoc_payment_config_provider" xsi:type="object">Fintoc\Payment\Model\Ui\ConfigProvider</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Logger Configuration -->
+    <type name="Fintoc\Payment\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+
+    <type name="Fintoc\Payment\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">fintoc</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">Fintoc\Payment\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Add Transaction Service to Payment Method -->
+    <type name="Fintoc\Payment\Model\Payment">
+        <arguments>
+            <argument name="transactionService" xsi:type="object">Fintoc\Payment\Service\TransactionService</argument>
+            <argument name="logger" xsi:type="object">Fintoc\Payment\Api\LoggerServiceInterface</argument>
+        </arguments>
+    </type>
+
+    <!-- Add Transaction Service to Webhook Controller -->
+    <type name="Fintoc\Payment\Controller\Webhook\Index">
+        <arguments>
+            <argument name="transactionService" xsi:type="object">Fintoc\Payment\Service\TransactionService</argument>
+            <argument name="logger" xsi:type="object">Fintoc\Payment\Api\LoggerServiceInterface</argument>
+        </arguments>
+    </type>
+</config>

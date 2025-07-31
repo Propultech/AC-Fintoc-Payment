@@ -1,0 +1,40 @@
+{
+    "fintoc_payment_transactions": {
+        "column": {
+            "entity_id": true,
+            "transaction_id": true,
+            "order_id": true,
+            "order_increment_id": true,
+            "reference": true,
+            "type": true,
+            "status": true,
+            "previous_status": true,
+            "amount": true,
+            "currency": true,
+            "request_data": true,
+            "response_data": true,
+            "webhook_data": true,
+            "status_history": true,
+            "error_code": true,
+            "error_message": true,
+            "retry_attempts": true,
+            "created_by": true,
+            "updated_by": true,
+            "ip_address": true,
+            "user_agent": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FINTOC_PAYMENT_TRANSACTIONS_TRANSACTION_ID": true,
+            "FINTOC_PAYMENT_TRANSACTIONS_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+        },
+        "index": {
+            "FINTOC_PAYMENT_TRANSACTIONS_ORDER_INCREMENT_ID": true,
+            "FINTOC_PAYMENT_TRANSACTIONS_TYPE": true,
+            "FINTOC_PAYMENT_TRANSACTIONS_STATUS": true,
+            "FINTOC_PAYMENT_TRANSACTIONS_CREATED_AT": true
+        }
+    }
+}

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="fintoc_payment_transactions" resource="default" engine="innodb" comment="Fintoc Payment Transactions">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Entity ID"/>
+        <column xsi:type="varchar" name="transaction_id" length="255" nullable="false" comment="Fintoc Transaction ID"/>
+        <column xsi:type="int" name="order_id" nullable="true" comment="Magento Order ID"/>
+        <column xsi:type="varchar" name="order_increment_id" length="32" nullable="true" comment="Magento Order Increment ID"/>
+        <column xsi:type="varchar" name="reference" length="255" nullable="true" comment="Internal Reference"/>
+        <column xsi:type="varchar" name="type" length="32" nullable="false" comment="Transaction Type"/>
+        <column xsi:type="varchar" name="status" length="32" nullable="false" comment="Transaction Status"/>
+        <column xsi:type="varchar" name="previous_status" length="32" nullable="true" comment="Previous Transaction Status"/>
+        <column xsi:type="decimal" name="amount" scale="4" precision="20" unsigned="false" nullable="false" default="0" comment="Transaction Amount"/>
+        <column xsi:type="varchar" name="currency" length="3" nullable="false" default="USD" comment="Transaction Currency"/>
+        <column xsi:type="text" name="request_data" nullable="true" comment="API Request Data (JSON)"/>
+        <column xsi:type="text" name="response_data" nullable="true" comment="API Response Data (JSON)"/>
+        <column xsi:type="text" name="webhook_data" nullable="true" comment="Webhook Data (JSON)"/>
+        <column xsi:type="text" name="status_history" nullable="true" comment="Status Change History (JSON)"/>
+        <column xsi:type="varchar" name="error_code" length="32" nullable="true" comment="Error Code"/>
+        <column xsi:type="text" name="error_message" nullable="true" comment="Error Message"/>
+        <column xsi:type="smallint" name="retry_attempts" unsigned="true" nullable="false" default="0" comment="Retry Attempts"/>
+        <column xsi:type="varchar" name="created_by" length="255" nullable="true" comment="Created By"/>
+        <column xsi:type="varchar" name="updated_by" length="255" nullable="true" comment="Updated By"/>
+        <column xsi:type="varchar" name="ip_address" length="45" nullable="true" comment="IP Address"/>
+        <column xsi:type="varchar" name="user_agent" length="255" nullable="true" comment="User Agent"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="FINTOC_PAYMENT_TRANSACTIONS_TRANSACTION_ID">
+            <column name="transaction_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="FINTOC_PAYMENT_TRANSACTIONS_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="fintoc_payment_transactions" column="order_id" referenceTable="sales_order"
+                    referenceColumn="entity_id" onDelete="SET NULL"/>
+        <index referenceId="FINTOC_PAYMENT_TRANSACTIONS_ORDER_INCREMENT_ID" indexType="btree">
+            <column name="order_increment_id"/>
+        </index>
+        <index referenceId="FINTOC_PAYMENT_TRANSACTIONS_TYPE" indexType="btree">
+            <column name="type"/>
+        </index>
+        <index referenceId="FINTOC_PAYMENT_TRANSACTIONS_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+        <index referenceId="FINTOC_PAYMENT_TRANSACTIONS_CREATED_AT" indexType="btree">
+            <column name="created_at"/>
+        </index>
+    </table>
+</schema>

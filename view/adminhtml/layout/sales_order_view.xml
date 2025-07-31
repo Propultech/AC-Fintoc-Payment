@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="order_payment_additional">
+            <block class="Fintoc\Payment\Block\Adminhtml\Order\View\TransactionInfo"
+                   name="fintoc_transaction_info"
+                   template="Fintoc_Payment::order/view/transaction_info.phtml"
+                   ifconfig="payment/fintoc_payment/active">
+                <arguments>
+                    <argument name="title" xsi:type="string" translate="true">Fintoc Payment Transactions</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

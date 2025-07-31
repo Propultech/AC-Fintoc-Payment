@@ -5,7 +5,7 @@
         <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Entity ID"/>
         <column xsi:type="varchar" name="transaction_id" length="255" nullable="false" comment="Fintoc Transaction ID"/>
-        <column xsi:type="int" name="order_id" nullable="true" comment="Magento Order ID"/>
+        <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true" comment="Magento Order ID"/>
         <column xsi:type="varchar" name="order_increment_id" length="32" nullable="true" comment="Magento Order Increment ID"/>
         <column xsi:type="varchar" name="reference" length="255" nullable="true" comment="Internal Reference"/>
         <column xsi:type="varchar" name="type" length="32" nullable="false" comment="Transaction Type"/>

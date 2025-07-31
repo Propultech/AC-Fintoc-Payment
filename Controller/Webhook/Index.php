@@ -272,7 +272,7 @@ class Index extends Action implements CsrfAwareActionInterface
     protected function getWebhookSecret()
     {
         $webhookSecret = $this->scopeConfig->getValue(
-            'payment/fintoc_payment/webhook_secret',
+            'payment/fintoc_payment/api_secret',
             ScopeInterface::SCOPE_STORE
         );
 

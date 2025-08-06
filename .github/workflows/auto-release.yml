@@ -1,0 +1,64 @@
+name: Create Release on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  create-release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history and tags
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Get version from composer.json
+        id: get-version
+        run: |
+          VERSION=$(php -r 'echo json_decode(file_get_contents("composer.json"), true)["version"];')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get previous tag
+        id: previoustag
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 --always 2>/dev/null || echo "")
+          echo "tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -z "${{ steps.previoustag.outputs.tag }}" ]; then
+            # If no previous tag, get all commits
+            CHANGELOG=$(git log --pretty=format:"* %s (%an)" --no-merges)
+          else
+            # If previous tag exists, get commits since then
+            CHANGELOG=$(git log ${{ steps.previoustag.outputs.tag }}..HEAD --pretty=format:"* %s (%an)" --no-merges)
+          fi
+          # Save changelog to a temporary file to handle multi-line output
+          echo "$CHANGELOG" > changelog.txt
+          echo "changelog_file=changelog.txt" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get-version.outputs.version }}
+          name: Release v${{ steps.get-version.outputs.version }}
+          body_path: ${{ steps.changelog.outputs.changelog_file }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

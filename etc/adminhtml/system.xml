@@ -14,16 +14,19 @@
                            showInStore="0" canRestore="1">
                         <label>API Key</label>
                         <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <config_path>payment/fintoc_payment/api_key</config_path>
                     </field>
                     <field id="api_secret" translate="label" type="obscure" sortOrder="40" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
                         <label>API Secret</label>
                         <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                        <config_path>payment/fintoc_payment/api_secret</config_path>
                     </field>
                     <field id="logging_enabled" translate="label" type="select" sortOrder="50" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
                         <label>Enable Logging</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/fintoc_payment/logging_enabled</config_path>
                     </field>
                     <field id="debug_level" translate="label" type="select" sortOrder="55" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
@@ -32,6 +35,7 @@
                         <depends>
                             <field id="logging_enabled">1</field>
                         </depends>
+                        <config_path>payment/fintoc_payment/debug_level</config_path>
                     </field>
                     <field id="log_sensitive_data" translate="label" type="select" sortOrder="58" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
@@ -40,11 +44,13 @@
                         <depends>
                             <field id="logging_enabled">1</field>
                         </depends>
+                        <config_path>payment/fintoc_payment/log_sensitive_data</config_path>
                     </field>
                     <field id="debug" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1"
                            showInStore="0" canRestore="1">
                         <label>Debug Mode</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/fintoc_payment/debug</config_path>
                     </field>
                 </group>
                 <group id="redirect" translate="label" type="text" sortOrder="10" showInDefault="1"
@@ -55,10 +61,12 @@
                            showInStore="0" canRestore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/fintoc_payment/active</config_path>
                     </field>
                     <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
                            showInStore="1" canRestore="1">
                         <label>Title</label>
+                        <config_path>payment/fintoc_payment/title</config_path>
                     </field>
                     <field id="payment_action" translate="label" type="select"
                            sortOrder="40" showInDefault="1" showInWebsite="1" canRestore="1">
@@ -67,16 +75,19 @@
                         <comment>If 'Automatically Invoice All Items' is set to 'Yes', the order is placed in
                             'Processing' state.
                         </comment>
+                        <config_path>payment/fintoc_payment/payment_action</config_path>
                     </field>
                     <field id="order_status" translate="label" type="select" sortOrder="70" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
                         <label>New Order Status</label>
                         <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
+                        <config_path>payment/fintoc_payment/order_status</config_path>
                     </field>
                     <field id="allowspecific" translate="label" type="select" sortOrder="80" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
                         <label>Payment from Applicable Countries</label>
                         <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                        <config_path>payment/fintoc_payment/allowspecific</config_path>
                     </field>
                     <field id="specificcountry" translate="label" type="multiselect" sortOrder="90" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
@@ -85,11 +96,13 @@
                         <depends>
                             <field id="allowspecific">1</field>
                         </depends>
+                        <config_path>payment/fintoc_payment/specificcountry</config_path>
                     </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="100" showInDefault="1"
                            showInWebsite="1"
                            showInStore="0" canRestore="1">
                         <label>Sort Order</label>
+                        <config_path>payment/fintoc_payment/sort_order</config_path>
                     </field>
                 </group>
                 <group id="bnpl" translate="label" type="text" sortOrder="10" showInDefault="1"
@@ -100,10 +113,12 @@
                            showInStore="0" canRestore="1">
                         <label>Enabled</label>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/fintoc_payment_bnpl/active</config_path>
                     </field>
                     <field id="title" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1"
                            showInStore="1" canRestore="1">
                         <label>Title</label>
+                        <config_path>payment/fintoc_payment_bnpl/title</config_path>
                     </field>
                     <field id="payment_action" translate="label" type="select"
                            sortOrder="40" showInDefault="1" showInWebsite="1" canRestore="1">
@@ -112,16 +127,19 @@
                         <comment>If 'Automatically Invoice All Items' is set to 'Yes', the order is placed in
                             'Processing' state.
                         </comment>
+                        <config_path>payment/fintoc_payment_bnpl/payment_action</config_path>
                     </field>
                     <field id="order_status" translate="label" type="select" sortOrder="70" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
                         <label>New Order Status</label>
                         <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
+                        <config_path>payment/fintoc_payment_bnpl/order_status</config_path>
                     </field>
                     <field id="allowspecific" translate="label" type="select" sortOrder="80" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
                         <label>Payment from Applicable Countries</label>
                         <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                        <config_path>payment/fintoc_payment_bnpl/allowspecific</config_path>
                     </field>
                     <field id="specificcountry" translate="label" type="multiselect" sortOrder="90" showInDefault="1"
                            showInWebsite="1" showInStore="0" canRestore="1">
@@ -130,11 +148,13 @@
                         <depends>
                             <field id="allowspecific">1</field>
                         </depends>
+                        <config_path>payment/fintoc_payment_bnpl/specificcountry</config_path>
                     </field>
                     <field id="sort_order" translate="label" type="text" sortOrder="100" showInDefault="1"
                            showInWebsite="1"
                            showInStore="0" canRestore="1">
                         <label>Sort Order</label>
+                        <config_path>payment/fintoc_payment_bnpl/sort_order</config_path>
                     </field>
                 </group>
             </group>

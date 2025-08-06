@@ -63,11 +63,10 @@
         </arguments>
     </type>
 
-    <!-- Add Transaction Service to Payment Method -->
+    <!-- Payment Method Configuration -->
     <type name="Fintoc\Payment\Model\Payment">
         <arguments>
-            <argument name="transactionService" xsi:type="object">Fintoc\Payment\Service\TransactionService</argument>
-            <argument name="logger" xsi:type="object">Fintoc\Payment\Api\LoggerServiceInterface</argument>
+            <argument name="logger" xsi:type="object">Magento\Payment\Model\Method\Logger</argument>
         </arguments>
     </type>
 

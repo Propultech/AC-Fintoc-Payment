@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_include.xsd">
+    <group id="settings" translate="label" type="text" sortOrder="10" showInDefault="1"
+           showInWebsite="1" showInStore="0">
+        <label>Basic Settings</label>
+        <field id="api_secret" translate="label" type="obscure" sortOrder="40" showInDefault="1"
+               showInWebsite="1" showInStore="0" canRestore="1">
+            <label>Secret API Key</label>
+            <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+            <comment><![CDATA[For more information, see the <a href="https://docs.fintoc.com/docs/api-keys" target="_blank">documentation</a>.]]></comment>
+            <config_path>payment/fintoc_payment/api_secret</config_path>
+        </field>
+        <field id="webhook_secret" translate="label" type="obscure" sortOrder="40" showInDefault="1"
+               showInWebsite="1" showInStore="0" canRestore="1">
+            <label>Webhook Secret</label>
+            <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+            <comment><![CDATA[For more information, see the <a href="https://docs.fintoc.com/docs/webhooks-creating-guide" target="_blank">documentation</a>.]]></comment>
+            <config_path>payment/fintoc_payment/webhook_secret</config_path>
+        </field>
+        <field id="logging_enabled" translate="label" type="select" sortOrder="50" showInDefault="1"
+               showInWebsite="1" showInStore="0" canRestore="1">
+            <label>Enable Logging</label>
+            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <config_path>payment/fintoc_payment/logging_enabled</config_path>
+        </field>
+        <field id="debug_level" translate="label" type="select" sortOrder="55" showInDefault="1"
+               showInWebsite="1" showInStore="0" canRestore="1">
+            <label>Debug Level</label>
+            <source_model>Fintoc\Payment\Model\Config\Source\DebugLevel</source_model>
+            <depends>
+                <field id="logging_enabled">1</field>
+            </depends>
+            <config_path>payment/fintoc_payment/debug_level</config_path>
+        </field>
+        <field id="log_sensitive_data" translate="label" type="select" sortOrder="58" showInDefault="1"
+               showInWebsite="1" showInStore="0" canRestore="1">
+            <label>Log Sensitive Data</label>
+            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <depends>
+                <field id="logging_enabled">1</field>
+            </depends>
+            <config_path>payment/fintoc_payment/log_sensitive_data</config_path>
+        </field>
+        <field id="debug" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1"
+               showInStore="0" canRestore="1">
+            <label>Debug Mode</label>
+            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <config_path>payment/fintoc_payment/debug</config_path>
+        </field>
+    </group>
+</include>

@@ -105,7 +105,7 @@ $transactions = $block->getTransactionHistory();
                                                 <?php endif; ?>
                                                 <tr>
                                                     <th><?= $block->escapeHtml(__('Amount')) ?></th>
-                                                    <td><?= $block->escapeHtml($block->formatAmount($transaction->getAmount(), $transaction->getCurrency())) ?></td>
+                                                    <td><?= $block->formatAmount($transaction->getAmount(), $transaction->getCurrency()) ?></td>
                                                 </tr>
                                                 <tr>
                                                     <th><?= $block->escapeHtml(__('Currency')) ?></th>

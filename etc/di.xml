@@ -63,18 +63,49 @@
         </arguments>
     </type>
 
+    <virtualType name="FintocPaymentMethodLogger" type="Magento\Payment\Model\Method\Logger">
+        <arguments>
+            <argument name="logger" xsi:type="object">Fintoc\Payment\Logger\Logger</argument>
+        </arguments>
+    </virtualType>
+
     <!-- Payment Method Configuration -->
     <type name="Fintoc\Payment\Model\Payment">
         <arguments>
-            <argument name="logger" xsi:type="object">Magento\Payment\Model\Method\Logger</argument>
+            <argument name="logger" xsi:type="object">FintocPaymentMethodLogger</argument>
         </arguments>
     </type>
 
-    <!-- Add Transaction Service to Webhook Controller -->
+    <!-- Configure Webhook Controller -->
     <type name="Fintoc\Payment\Controller\Webhook\Index">
         <arguments>
             <argument name="transactionService" xsi:type="object">Fintoc\Payment\Service\TransactionService</argument>
-            <argument name="logger" xsi:type="object">Fintoc\Payment\Api\LoggerServiceInterface</argument>
+            <argument name="logger" xsi:type="object">Fintoc\Payment\Logger\Logger</argument>
+        </arguments>
+    </type>
+
+    <!-- Configure GuzzleHttp Client -->
+    <type name="GuzzleHttp\Client">
+        <arguments>
+            <argument name="config" xsi:type="array">
+                <item name="timeout" xsi:type="number">30</item>
+                <item name="http_errors" xsi:type="boolean">false</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!-- Configure Checkout Create Controller -->
+    <type name="Fintoc\Payment\Controller\Checkout\Create">
+        <arguments>
+            <argument name="httpClient" xsi:type="object">GuzzleHttp\Client</argument>
+            <argument name="logger" xsi:type="object">Fintoc\Payment\Logger\Logger</argument>
+        </arguments>
+    </type>
+
+    <!-- Configure Checkout Commit Controller -->
+    <type name="Fintoc\Payment\Controller\Checkout\Commit">
+        <arguments>
+            <argument name="logger" xsi:type="object">Fintoc\Payment\Logger\Logger</argument>
         </arguments>
     </type>
 </config>

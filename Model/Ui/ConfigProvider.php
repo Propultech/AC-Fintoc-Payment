@@ -6,8 +6,7 @@
 namespace Fintoc\Payment\Model\Ui;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
-use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Store\Model\ScopeInterface;
+use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Model\Payment;
 
 /**
@@ -16,17 +15,17 @@ use Fintoc\Payment\Model\Payment;
 class ConfigProvider implements ConfigProviderInterface
 {
     /**
-     * @var ScopeConfigInterface
+     * @var ConfigurationServiceInterface
      */
-    protected $scopeConfig;
+    protected $configService;
 
     /**
-     * @param ScopeConfigInterface $scopeConfig
+     * @param ConfigurationServiceInterface $configService
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig
+        ConfigurationServiceInterface $configService
     ) {
-        $this->scopeConfig = $scopeConfig;
+        $this->configService = $configService;
     }
 
     /**
@@ -39,50 +38,11 @@ class ConfigProvider implements ConfigProviderInterface
         return [
             'payment' => [
                 Payment::CODE => [
-                    'title' => $this->getTitle(),
-                    'apiKey' => $this->getPublicApiKey(),
-                    'isDebugMode' => $this->isDebugMode()
+                    'title' => $this->configService->getTitle(),
+                    'apiKey' => $this->configService->getApiKey(),
+                    'isDebugMode' => $this->configService->isDebugMode()
                 ]
             ]
         ];
-    }
-
-    /**
-     * Get payment method title
-     *
-     * @return string
-     */
-    protected function getTitle()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/' . Payment::CODE . '/title',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * Get public API key
-     *
-     * @return string
-     */
-    protected function getPublicApiKey()
-    {
-        return $this->scopeConfig->getValue(
-            'payment/' . Payment::CODE . '/api_key',
-            ScopeInterface::SCOPE_STORE
-        );
-    }
-
-    /**
-     * Check if debug mode is enabled
-     *
-     * @return bool
-     */
-    protected function isDebugMode()
-    {
-        return (bool) $this->scopeConfig->getValue(
-            'payment/' . Payment::CODE . '/debug',
-            ScopeInterface::SCOPE_STORE
-        );
     }
 }

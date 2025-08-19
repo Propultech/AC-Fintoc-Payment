@@ -8,6 +8,7 @@ define(
         rendererList
     ) {
         'use strict';
+
         rendererList.push(
             {
                 type: 'fintoc_payment',

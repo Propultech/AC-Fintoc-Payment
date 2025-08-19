@@ -5,8 +5,8 @@
 
 namespace Fintoc\Payment\Model;
 
-use Fintoc\Fintoc;
-use Fintoc\Payment\Model\Config\Source\PaymentAction;
+use Fintoc\Payment\Api\ConfigurationServiceInterface;
+use Fintoc\Payment\Block\Info\Fintoc;
 use Magento\Framework\Api\AttributeValueFactory;
 use Magento\Framework\Api\ExtensionAttributesFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -17,6 +17,8 @@ use Magento\Framework\Registry;
 use Magento\Payment\Helper\Data;
 use Magento\Payment\Model\Method\AbstractMethod;
 use Magento\Payment\Model\Method\Logger;
+use Magento\Quote\Api\Data\CartInterface;
+use Magento\Sales\Model\Order;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -27,62 +29,27 @@ class Payment extends AbstractMethod
     /**
      * Payment method code
      */
-    const CODE = 'fintoc_payment';
+    public const CODE = 'fintoc_payment';
 
-    /**
-     * @var string
-     */
     protected $_code = self::CODE;
-
-    /**
-     * @var bool
-     */
     protected $_isGateway = true;
-
-    /**
-     * @var bool
-     */
     protected $_canAuthorize = true;
-
-    /**
-     * @var bool
-     */
     protected $_canCapture = true;
-
-    /**
-     * @var bool
-     */
-    protected $_canCapturePartial = false;
-
-    /**
-     * @var bool
-     */
-    protected $_canRefund = false;
-
-    /**
-     * @var bool
-     */
+    protected $_canRefund = true;
+    protected $_canRefundInvoicePartial = true;
     protected $_canVoid = true;
-
-    /**
-     * @var bool
-     */
     protected $_canUseInternal = false;
-
-    /**
-     * @var bool
-     */
     protected $_canUseCheckout = true;
-
-    /**
-     * @var bool
-     */
     protected $_isInitializeNeeded = true;
+    protected $_infoBlockType = Fintoc::class;
+    protected $supportedCurrencyCodes = ['CLP'];
 
     /**
-     * @var StoreManagerInterface
+     * @var ConfigurationServiceInterface
      */
-    protected $storeManager;
+    private ConfigurationServiceInterface $configService;
+
+    private StoreManagerInterface $storeManager;
 
     /**
      * @param Context $context
@@ -92,24 +59,27 @@ class Payment extends AbstractMethod
      * @param Data $paymentData
      * @param ScopeConfigInterface $scopeConfig
      * @param Logger $logger
+     * @param ConfigurationServiceInterface $configService
      * @param StoreManagerInterface $storeManager
      * @param AbstractResource|null $resource
      * @param AbstractDb|null $resourceCollection
      * @param array $data
      */
     public function __construct(
-        Context $context,
-        Registry $registry,
-        ExtensionAttributesFactory $extensionFactory,
-        AttributeValueFactory $customAttributeFactory,
-        Data $paymentData,
-        ScopeConfigInterface $scopeConfig,
-        Logger $logger,
-        StoreManagerInterface $storeManager,
-        AbstractResource $resource = null,
-        AbstractDb $resourceCollection = null,
-        array $data = []
-    ) {
+        Context                       $context,
+        Registry                      $registry,
+        ExtensionAttributesFactory    $extensionFactory,
+        AttributeValueFactory         $customAttributeFactory,
+        Data                          $paymentData,
+        ScopeConfigInterface          $scopeConfig,
+        Logger                        $logger,
+        ConfigurationServiceInterface $configService,
+        StoreManagerInterface         $storeManager,
+        AbstractResource              $resource = null,
+        AbstractDb                    $resourceCollection = null,
+        array                         $data = []
+    )
+    {
         parent::__construct(
             $context,
             $registry,
@@ -123,17 +93,23 @@ class Payment extends AbstractMethod
             $data
         );
         $this->storeManager = $storeManager;
+        $this->configService = $configService;
     }
 
     /**
-     * Get Fintoc client
+     * Availability for currency.
      *
-     * @return Fintoc
+     * @param string $currencyCode
+     *
+     * @return bool
      */
-    protected function getFintocClient()
+    public function canUseForCurrency($currencyCode)
     {
-        $apiKey = $this->getConfigData('api_key');
-        return new Fintoc($apiKey);
+        if (!in_array($currencyCode, $this->supportedCurrencyCodes)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -145,20 +121,57 @@ class Payment extends AbstractMethod
      */
     public function initialize($paymentAction, $stateObject)
     {
-        $stateObject->setState(\Magento\Sales\Model\Order::STATE_PENDING_PAYMENT);
-        $stateObject->setStatus('pending_payment');
+        $storeId = $this->storeManager->getStore()->getId();
+        $stateObject->setState(Order::STATE_NEW);
+        $stateObject->setStatus($this->configService->getOrderStatus($storeId));
         $stateObject->setIsNotified(false);
 
         return $this;
     }
 
     /**
-     * Get payment instructions
+     * Check if payment method is active
      *
-     * @return string
+     * @param int|null $storeId
+     * @return bool
      */
-    public function getInstructions()
+    public function isActive($storeId = null)
     {
-        return $this->getConfigData('instructions');
+        return $this->configService->isActive($storeId);
+    }
+
+    /**
+     * Check whether payment method is available
+     *
+     * @param CartInterface|null $quote
+     * @return bool
+     */
+    public function isAvailable(CartInterface $quote = null)
+    {
+        // Check if method is active
+        if (!$this->isActive($quote ? $quote->getStoreId() : null)) {
+            return false;
+        }
+
+        // If no quote, we can't check the amount
+        if ($quote === null) {
+            return true;
+        }
+
+        // Get the maximum order amount
+        $maxAmount = $this->configService->getMaxOrderAmount();
+
+        // If no maximum amount is set, the payment method is available
+        if ($maxAmount === null) {
+            return true;
+        }
+
+        // Check if the order amount exceeds the maximum allowed amount
+        $grandTotal = $quote->getGrandTotal();
+        if ($grandTotal > $maxAmount) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -10,11 +10,12 @@ use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\LoggerServiceInterface;
 use Fintoc\Payment\Logger\Logger;
 use Monolog\Logger as MonologLogger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service for logging messages
  */
-class LoggerService implements LoggerServiceInterface
+class LoggerService implements LoggerServiceInterface, LoggerInterface
 {
     /**
      * @var Logger
@@ -165,11 +166,11 @@ class LoggerService implements LoggerServiceInterface
      * Log a message with the given level
      *
      * @param int $level The log level
-     * @param string|array $message The message to log
+     * @param string|\Stringable $message The message to log
      * @param array $context Additional context data
      * @return void
      */
-    private function log(int $level, $message, array $context = []): void
+    public function log($level, string|\Stringable $message, array $context = []): void
     {
         // Skip logging if it's disabled or the level is below the configured level
         if (!$this->configService->isLoggingEnabled() || $level < $this->configService->getDebugLevel()) {

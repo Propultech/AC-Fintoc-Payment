@@ -5,9 +5,9 @@
             <fintoc_payment>
                 <active>0</active>
                 <model>Fintoc\Payment\Model\Payment</model>
-                <title>Fintoc Payment</title>
-                <order_status>pending_payment</order_status>
-                <payment_action>authorize</payment_action>
+                <title>Paga con tu Banco</title>
+                <order_status>pending</order_status>
+                <payment_action>authorize_capture</payment_action>
                 <allowspecific>0</allowspecific>
                 <logging_enabled>1</logging_enabled>
                 <debug_level>200</debug_level>
@@ -19,6 +19,7 @@
                 <can_use_checkout>1</can_use_checkout>
                 <is_gateway>1</is_gateway>
                 <sort_order>1</sort_order>
+                <max_order_amount>150000</max_order_amount>
             </fintoc_payment>
         </payment>
     </default>

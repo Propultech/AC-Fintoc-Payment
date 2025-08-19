@@ -1,0 +1,83 @@
+<?php
+/** @var \Fintoc\Payment\Block\Adminhtml\Transactions\View $block */
+use Magento\Framework\Escaper;
+
+$transaction = $block->getTransaction();
+if (!$transaction) {
+    echo '<div class="message message-error"><div>' . $block->escapeHtml(__('Transaction not found.')) . '</div></div>';
+    return;
+}
+
+$esc = function ($v) use ($block) { return $block->escapeHtml((string)$v); };
+
+$fields = [
+    'Entity ID' => $transaction->getEntityId(),
+    'Transaction ID' => $transaction->getTransactionId(),
+    'Order #' => $transaction->getOrderIncrementId(),
+    'Type' => $block->getTypeLabel((string)$transaction->getType()),
+    'Status' => $block->getStatusLabel((string)$transaction->getStatus()),
+    'Previous Status' => $transaction->getPreviousStatus() ? $block->getStatusLabel((string)$transaction->getPreviousStatus()) : '',
+    'Amount' => $block->formatAmount($transaction->getAmount(), $transaction->getCurrency()),
+    'Currency' => $transaction->getCurrency(),
+    'Reference' => $transaction->getReference(),
+    'Error Code' => $transaction->getErrorCode(),
+    'Error Message' => $transaction->getErrorMessage(),
+    'Retry Attempts' => $transaction->getRetryAttempts(),
+    'Created By' => $transaction->getCreatedBy(),
+    'Updated By' => $transaction->getUpdatedBy(),
+    'IP Address' => $transaction->getIpAddress(),
+    'User Agent' => $transaction->getUserAgent(),
+    'Created At' => $transaction->getCreatedAt(),
+    'Updated At' => $transaction->getUpdatedAt(),
+];
+?>
+
+<div class="page-main-actions">
+    <div class="page-actions"></div>
+</div>
+
+<div class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?php echo $block->escapeHtml(__('Fintoc Transaction Details')); ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div class="admin__control-table-wrapper">
+            <table class="data-table admin__control-table">
+                <tbody>
+                <?php foreach ($fields as $label => $value): ?>
+                    <?php if ($value === null || $value === '') continue; ?>
+                    <tr>
+                        <th style="width: 240px;"><?php echo $block->escapeHtml((string)__($label)); ?></th>
+                        <td><?php echo $esc($value); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php
+// JSON-like large fields displayed in pretty format
+$jsonSections = [
+    'Request Data' => $transaction->getRequestData(),
+    'Response Data' => $transaction->getResponseData(),
+    'Webhook Data' => $transaction->getWebhookData(),
+    'Status History' => $transaction->getStatusHistory(),
+];
+?>
+
+<?php foreach ($jsonSections as $label => $raw): ?>
+    <?php if ($raw): ?>
+        <div class="admin__page-section">
+            <div class="admin__page-section-title">
+                <span class="title"><?php echo $block->escapeHtml((string)__($label)); ?></span>
+            </div>
+            <div class="admin__page-section-content">
+                <pre style="max-height: 500px; overflow:auto; background:#f8f8f8; border:1px solid #ddd; padding:12px;">
+<?php echo htmlspecialchars($block->prettyJson($raw), ENT_NOQUOTES, 'UTF-8'); ?>
+                </pre>
+            </div>
+        </div>
+    <?php endif; ?>
+<?php endforeach; ?>

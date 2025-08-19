@@ -3,9 +3,6 @@ define(
         'jquery',
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/action/place-order',
-        'Magento_Checkout/js/action/select-payment-method',
-        'Magento_Customer/js/model/customer',
-        'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/model/payment/additional-validators',
         'mage/url'
     ],
@@ -13,9 +10,6 @@ define(
         $,
         Component,
         placeOrderAction,
-        selectPaymentMethodAction,
-        customer,
-        checkoutData,
         additionalValidators,
         url
     ) {
@@ -43,22 +37,6 @@ define(
             },
 
             /**
-             * Get payment method title
-             * @returns {String}
-             */
-            getTitle: function () {
-                return window.checkoutConfig.payment.fintoc_payment.title;
-            },
-
-            /**
-             * Check if payment is active
-             * @returns {Boolean}
-             */
-            isActive: function () {
-                return true;
-            },
-
-            /**
              * Place order handler
              */
             placeOrder: function (data, event) {
@@ -66,14 +44,40 @@ define(
                     event.preventDefault();
                 }
 
+                var self = this;
+
                 if (this.validate() && additionalValidators.validate()) {
                     this.isPlaceOrderActionAllowed(false);
 
                     this.getPlaceOrderDeferredObject()
                         .done(
-                            function () {
-                                // Redirect to success page
-                                window.location.replace(url.build('checkout/onepage/success/'));
+                            function (response) {
+                                console.log(response);
+                                // Get the order ID from the response
+                                var orderId = response;
+
+                                // Create Fintoc transaction and redirect
+                                $.ajax({
+                                    url: url.build('fintoc/checkout/create'),
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    success: function (response) {
+                                        console.log(response);
+                                        if (response.success && response.redirect_url) {
+
+                                            // Redirect to Fintoc checkout page
+                                            window.location.href = response.redirect_url;
+                                        } else {
+                                            // Handle error
+                                            self.isPlaceOrderActionAllowed(true);
+                                            alert(response.error || 'An error occurred while processing your payment. Please try again.');
+                                        }
+                                    },
+                                    error: function () {
+                                        self.isPlaceOrderActionAllowed(true);
+                                        alert('An error occurred while processing your payment. Please try again.');
+                                    }
+                                });
                             }
                         ).always(
                             function () {

@@ -19,9 +19,21 @@ class ConfigurationService implements ConfigurationServiceInterface
     /**
      * Configuration paths
      */
+    private const XML_PATH_ACTIVE = 'payment/fintoc_payment/active';
+    private const XML_PATH_TITLE = 'payment/fintoc_payment/title';
+    private const XML_PATH_ORDER_STATUS = 'payment/fintoc_payment/order_status';
+    private const XML_PATH_PAYMENT_ACTION = 'payment/fintoc_payment/payment_action';
+    private const XML_PATH_ALLOW_SPECIFIC = 'payment/fintoc_payment/allowspecific';
+    private const XML_PATH_SPECIFIC_COUNTRY = 'payment/fintoc_payment/specificcountry';
+    private const XML_PATH_API_KEY = 'payment/fintoc_payment/api_key';
+    private const XML_PATH_API_SECRET = 'payment/fintoc_payment/api_secret';
+    private const XML_PATH_WEBHOOK_SECRET = 'payment/fintoc_payment/webhook_secret';
+    private const XML_PATH_DEBUG = 'payment/fintoc_payment/debug';
     private const XML_PATH_LOGGING_ENABLED = 'payment/fintoc_payment/logging_enabled';
     private const XML_PATH_DEBUG_LEVEL = 'payment/fintoc_payment/debug_level';
     private const XML_PATH_LOG_SENSITIVE_DATA = 'payment/fintoc_payment/log_sensitive_data';
+    private const XML_PATH_MAX_ORDER_AMOUNT = 'payment/fintoc_payment/max_order_amount';
+    private const XML_PATH_SORT_ORDER = 'payment/fintoc_payment/sort_order';
 
     /**
      * @var ScopeConfigInterface
@@ -34,39 +46,153 @@ class ConfigurationService implements ConfigurationServiceInterface
     private $storeManager;
 
     /**
+     * @var \Magento\Framework\Encryption\EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
+     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
      */
     public function __construct(
         ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        \Magento\Framework\Encryption\EncryptorInterface $encryptor
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
+        $this->encryptor = $encryptor;
     }
 
     /**
      * @inheritDoc
      */
-    public function isLoggingEnabled(): bool
+    public function isActive(?string $scopeCode = null): bool
     {
-        return (bool)$this->getConfig(self::XML_PATH_LOGGING_ENABLED);
+        return (bool)$this->getConfig(self::XML_PATH_ACTIVE, ScopeInterface::SCOPE_STORE, $scopeCode);
     }
 
     /**
      * @inheritDoc
      */
-    public function getDebugLevel(): int
+    public function getTitle(?string $scopeCode = null): string
     {
-        return (int)$this->getConfig(self::XML_PATH_DEBUG_LEVEL);
+        return (string)$this->getConfig(self::XML_PATH_TITLE, ScopeInterface::SCOPE_STORE, $scopeCode);
     }
 
     /**
      * @inheritDoc
      */
-    public function isLogSensitiveDataEnabled(): bool
+    public function getOrderStatus(?string $scopeCode = null): string
     {
-        return (bool)$this->getConfig(self::XML_PATH_LOG_SENSITIVE_DATA);
+        return (string)$this->getConfig(self::XML_PATH_ORDER_STATUS, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getPaymentAction(?string $scopeCode = null): string
+    {
+        return (string)$this->getConfig(self::XML_PATH_PAYMENT_ACTION, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isAllowSpecific(?string $scopeCode = null): bool
+    {
+        return (bool)$this->getConfig(self::XML_PATH_ALLOW_SPECIFIC, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSpecificCountries(?string $scopeCode = null): array
+    {
+        $countries = $this->getConfig(self::XML_PATH_SPECIFIC_COUNTRY, ScopeInterface::SCOPE_STORE, $scopeCode);
+        return $countries ? explode(',', $countries) : [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getApiKey(?string $scopeCode = null): string
+    {
+        return (string)$this->getConfig(self::XML_PATH_API_KEY, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getApiSecret(?string $scopeCode = null): string
+    {
+        $encryptedValue = $this->getConfig(self::XML_PATH_API_SECRET, ScopeInterface::SCOPE_WEBSITE, $scopeCode);
+        if (!$encryptedValue) {
+            return '';
+        }
+        return $this->encryptor->decrypt($encryptedValue);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getWebhookSecret(?string $scopeCode = null): string
+    {
+        $encryptedValue = $this->getConfig(self::XML_PATH_WEBHOOK_SECRET, ScopeInterface::SCOPE_WEBSITE, $scopeCode);
+        if (!$encryptedValue) {
+            return '';
+        }
+        return $this->encryptor->decrypt($encryptedValue);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isDebugMode(?string $scopeCode = null): bool
+    {
+        return (bool)$this->getConfig(self::XML_PATH_DEBUG, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isLoggingEnabled(?string $scopeCode = null): bool
+    {
+        return (bool)$this->getConfig(self::XML_PATH_LOGGING_ENABLED, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDebugLevel(?string $scopeCode = null): int
+    {
+        return (int)$this->getConfig(self::XML_PATH_DEBUG_LEVEL, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isLogSensitiveDataEnabled(?string $scopeCode = null): bool
+    {
+        return (bool)$this->getConfig(self::XML_PATH_LOG_SENSITIVE_DATA, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMaxOrderAmount(?string $scopeCode = null): ?float
+    {
+        $value = $this->getConfig(self::XML_PATH_MAX_ORDER_AMOUNT, ScopeInterface::SCOPE_STORE, $scopeCode);
+        return $value !== null && $value !== '' ? (float)$value : null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSortOrder(?string $scopeCode = null): int
+    {
+        return (int)$this->getConfig(self::XML_PATH_SORT_ORDER, ScopeInterface::SCOPE_STORE, $scopeCode);
     }
 
     /**

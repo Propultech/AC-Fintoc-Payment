@@ -1,10 +1,13 @@
-<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+<div class="payment-method fintoc" data-bind="css: {'_active': (getCode() == isChecked())}">
     <div class="payment-method-title field choice">
         <input type="radio"
                name="payment[method]"
                class="radio"
                data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
-        <label data-bind="attr: {'for': getCode()}" class="label"><span data-bind="text: getTitle()"></span></label>
+        <label data-bind="attr: {'for': getCode()}" class="label">
+            <span data-bind="html: getTitle()"></span>
+            <img src="https://assets.fintoc.com/?img_name=combo_cl_light">
+        </label>
     </div>
     <div class="payment-method-content">
         <!-- ko foreach: getRegion('messages') -->

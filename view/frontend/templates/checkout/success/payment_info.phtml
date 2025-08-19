@@ -1,0 +1,28 @@
+<?php
+/** @var \Fintoc\Payment\Block\Checkout\Success $block */
+use Magento\Framework\Escaper;
+
+if (!$block->canShow()) {
+    return;
+}
+
+$rows = $block->getRows();
+if (!$rows) {
+    return;
+}
+?>
+<div class="fintoc-payment-info" data-bind="scope: 'fintoc-payment-info'">
+    <div class="checkout-success-fintoc-title">
+        <strong><?php /* @var Escaper $escaper */ echo $block->escapeHtml(__('Payment Information')); ?></strong>
+    </div>
+    <table class="data table fintoc-payment-table">
+        <tbody>
+        <?php foreach ($rows as $label => $value): ?>
+            <tr>
+                <th scope="row"><?= $block->escapeHtml((string)$label); ?></th>
+                <td><?= $value; ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>

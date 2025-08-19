@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Fintoc_Payment::fintoc" title="Fintoc" translate="title" module="Fintoc_Payment" sortOrder="50"
+             parent="Magento_Sales::sales" resource="Fintoc_Payment::fintoc"/>
+        <add id="Fintoc_Payment::transactions" title="Transactions" translate="title" module="Fintoc_Payment"
+             sortOrder="10" parent="Fintoc_Payment::fintoc" action="fintoc/transactions/index"
+             resource="Fintoc_Payment::transactions"/>
+    </menu>
+</config>

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Fintoc_Payment::fintoc" title="Fintoc" sortOrder="10">
+                    <resource id="Fintoc_Payment::transactions" title="Transactions" />
+                </resource>
+                <resource id="Fintoc_Refunds::refunds_root" title="Fintoc Refunds" sortOrder="11">
+                    <resource id="Fintoc_Refunds::orders_grid" title="View Fintoc Orders Grid"/>
+                    <resource id="Fintoc_Refunds::create_refund" title="Create Refund"/>
+                    <resource id="Fintoc_Refunds::view_transactions" title="View Refund Transactions"/>
+                    <resource id="Fintoc_Refunds::cancel_refund" title="Cancel Refund"/>
+                    <resource id="Fintoc_Refunds::view_payloads" title="View Refund Payloads"/>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

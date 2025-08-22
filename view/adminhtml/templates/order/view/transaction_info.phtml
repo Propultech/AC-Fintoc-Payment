@@ -2,6 +2,8 @@
 /**
  * @var \Fintoc\Payment\Block\Adminhtml\Order\View\TransactionInfo $block
  */
+/** @var \Magento\Framework\Escaper $escaper */
+
 
 // Only display for Fintoc payments
 if (!$block->isFintocPayment()) {
@@ -14,12 +16,12 @@ $transactions = $block->getTransactionHistory();
 <?php if (empty($transactions)): ?>
     <div class="admin__page-section-item-content">
         <div class="message info empty">
-            <span><?= $block->escapeHtml(__('No Fintoc transactions found for this order.')) ?></span>
+            <span><?= $escaper->escapeHtml(__('No Fintoc transactions found for this order.')) ?></span>
         </div>
     </div>
 <?php else: ?>
     <div class="admin__page-section-title">
-        <span class="title"><?= $block->escapeHtml($block->getData('title')) ?></span>
+        <span class="title"><?= $escaper->escapeHtml($block->getData('title')) ?></span>
     </div>
     <div class="admin__page-section-content">
         <div class="fintoc-transactions">
@@ -27,129 +29,117 @@ $transactions = $block->getTransactionHistory();
                 <table class="data-table admin__control-table">
                     <thead>
                         <tr>
-                            <th class="col-transaction-id"><?= $block->escapeHtml(__('Transaction ID')) ?></th>
-                            <th class="col-type"><?= $block->escapeHtml(__('Type')) ?></th>
-                            <th class="col-status"><?= $block->escapeHtml(__('Status')) ?></th>
-                            <th class="col-amount"><?= $block->escapeHtml(__('Amount')) ?></th>
-                            <th class="col-date"><?= $block->escapeHtml(__('Date')) ?></th>
-                            <th class="col-actions"><?= $block->escapeHtml(__('Actions')) ?></th>
+                            <th class="col-transaction-id"><?= $escaper->escapeHtml(__('Transaction ID')) ?></th>
+                            <th class="col-type"><?= $escaper->escapeHtml(__('Type')) ?></th>
+                            <th class="col-status"><?= $escaper->escapeHtml(__('Status')) ?></th>
+                            <th class="col-amount"><?= $escaper->escapeHtml(__('Amount')) ?></th>
+                            <th class="col-date"><?= $escaper->escapeHtml(__('Date')) ?></th>
+                            <th class="col-actions"><?= $escaper->escapeHtml(__('Actions')) ?></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($transactions as $transaction): ?>
                             <tr>
                                 <td class="col-transaction-id">
-                                    <?= $block->escapeHtml($transaction->getTransactionId()) ?>
+                                    <?= $escaper->escapeHtml($transaction->getTransactionId()) ?>
                                 </td>
                                 <td class="col-type">
-                                    <?= $block->escapeHtml($block->getTransactionTypeLabel($transaction->getType())) ?>
+                                    <?= $escaper->escapeHtml($block->getTransactionTypeLabel($transaction->getType())) ?>
                                 </td>
                                 <td class="col-status">
-                                    <span class="<?= $block->escapeHtmlAttr($block->getTransactionStatusClass($transaction->getStatus())) ?>">
-                                        <span><?= $block->escapeHtml($block->getTransactionStatusLabel($transaction->getStatus())) ?></span>
+                                    <span class="<?= $escaper->escapeHtmlAttr($block->getTransactionStatusClass($transaction->getStatus())) ?>">
+                                        <span><?= $escaper->escapeHtml($block->getTransactionStatusLabel($transaction->getStatus())) ?></span>
                                     </span>
                                 </td>
                                 <td class="col-amount">
-                                    <?= $block->escapeHtml($block->formatAmount($transaction->getAmount(), $transaction->getCurrency())) ?>
+                                    <?= $escaper->escapeHtml($block->formatAmount($transaction->getAmount(), $transaction->getCurrency())) ?>
                                 </td>
                                 <td class="col-date">
-                                    <?= $block->escapeHtml($block->formatDate(
-                                        $transaction->getCreatedAt(),
-                                        \IntlDateFormatter::MEDIUM,
-                                        true
-                                    )) ?>
+                                    <?= $escaper->escapeHtml($block->formatDateTimeExact($transaction->getCreatedAt())) ?>
                                 </td>
                                 <td class="col-actions">
-                                    <a href="#" class="action-show-hide" data-transaction-id="<?= $block->escapeHtmlAttr($transaction->getEntityId()) ?>">
-                                        <?= $block->escapeHtml(__('Details')) ?>
+                                    <a href="#" class="action-show-hide" data-transaction-id="<?= $escaper->escapeHtmlAttr($transaction->getEntityId()) ?>">
+                                        <?= $escaper->escapeHtml(__('Details')) ?>
                                     </a>
                                 </td>
                             </tr>
-                            <tr id="transaction-details-<?= $block->escapeHtmlAttr($transaction->getEntityId()) ?>" class="transaction-details" style="display: none;">
+                            <tr id="transaction-details-<?= $escaper->escapeHtmlAttr($transaction->getEntityId()) ?>" class="transaction-details" style="display: none;">
                                 <td colspan="6">
                                     <div class="transaction-details-content">
                                         <div class="transaction-section">
-                                            <h4><?= $block->escapeHtml(__('Transaction Details')) ?></h4>
+                                            <h4><?= $escaper->escapeHtml(__('Transaction Details')) ?></h4>
                                             <table class="data-table">
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Transaction ID')) ?></th>
-                                                    <td><?= $block->escapeHtml($transaction->getTransactionId()) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Transaction ID')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($transaction->getTransactionId()) ?></td>
                                                 </tr>
                                                 <?php if ($transaction->getReference()): ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Reference')) ?></th>
-                                                    <td><?= $block->escapeHtml($transaction->getReference()) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Reference')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($transaction->getReference()) ?></td>
                                                 </tr>
                                                 <?php endif; ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Type')) ?></th>
-                                                    <td><?= $block->escapeHtml($block->getTransactionTypeLabel($transaction->getType())) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Type')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($block->getTransactionTypeLabel($transaction->getType())) ?></td>
                                                 </tr>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Status')) ?></th>
+                                                    <th><?= $escaper->escapeHtml(__('Status')) ?></th>
                                                     <td>
-                                                        <span class="<?= $block->escapeHtmlAttr($block->getTransactionStatusClass($transaction->getStatus())) ?>">
-                                                            <span><?= $block->escapeHtml($block->getTransactionStatusLabel($transaction->getStatus())) ?></span>
+                                                        <span class="<?= $escaper->escapeHtmlAttr($block->getTransactionStatusClass($transaction->getStatus())) ?>">
+                                                            <span><?= $escaper->escapeHtml($block->getTransactionStatusLabel($transaction->getStatus())) ?></span>
                                                         </span>
                                                     </td>
                                                 </tr>
                                                 <?php if ($transaction->getPreviousStatus()): ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Previous Status')) ?></th>
+                                                    <th><?= $escaper->escapeHtml(__('Previous Status')) ?></th>
                                                     <td>
-                                                        <span class="<?= $block->escapeHtmlAttr($block->getTransactionStatusClass($transaction->getPreviousStatus())) ?>">
-                                                            <span><?= $block->escapeHtml($block->getTransactionStatusLabel($transaction->getPreviousStatus())) ?></span>
+                                                        <span class="<?= $escaper->escapeHtmlAttr($block->getTransactionStatusClass($transaction->getPreviousStatus())) ?>">
+                                                            <span><?= $escaper->escapeHtml($block->getTransactionStatusLabel($transaction->getPreviousStatus())) ?></span>
                                                         </span>
                                                     </td>
                                                 </tr>
                                                 <?php endif; ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Amount')) ?></th>
-                                                    <td><?= $block->formatAmount($transaction->getAmount(), $transaction->getCurrency()) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Amount')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($block->formatAmount($transaction->getAmount(), $transaction->getCurrency())) ?></td>
                                                 </tr>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Currency')) ?></th>
-                                                    <td><?= $block->escapeHtml($transaction->getCurrency()) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Currency')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($transaction->getCurrency()) ?></td>
                                                 </tr>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Created At')) ?></th>
-                                                    <td><?= $block->escapeHtml($block->formatDate(
-                                                        $transaction->getCreatedAt(),
-                                                        \IntlDateFormatter::MEDIUM,
-                                                        true
-                                                    )) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Created At')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($block->formatDateTimeExact($transaction->getCreatedAt())) ?></td>
                                                 </tr>
                                                 <?php if ($transaction->getUpdatedAt() && $transaction->getUpdatedAt() != $transaction->getCreatedAt()): ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Updated At')) ?></th>
-                                                    <td><?= $block->escapeHtml($block->formatDate(
-                                                        $transaction->getUpdatedAt(),
-                                                        \IntlDateFormatter::MEDIUM,
-                                                        true
-                                                    )) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Updated At')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($block->formatDateTimeExact($transaction->getUpdatedAt())) ?></td>
                                                 </tr>
                                                 <?php endif; ?>
                                                 <?php if ($transaction->getCreatedBy()): ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Created By')) ?></th>
-                                                    <td><?= $block->escapeHtml($transaction->getCreatedBy()) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Created By')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($transaction->getCreatedBy()) ?></td>
                                                 </tr>
                                                 <?php endif; ?>
                                                 <?php if ($transaction->getUpdatedBy()): ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Updated By')) ?></th>
-                                                    <td><?= $block->escapeHtml($transaction->getUpdatedBy()) ?></td>
+                                                    <th><?= $escaper->escapeHtml(__('Updated By')) ?></th>
+                                                    <td><?= $escaper->escapeHtml($transaction->getUpdatedBy()) ?></td>
                                                 </tr>
                                                 <?php endif; ?>
                                                 <?php if ($transaction->getErrorCode() || $transaction->getErrorMessage()): ?>
                                                 <tr>
-                                                    <th><?= $block->escapeHtml(__('Error')) ?></th>
+                                                    <th><?= $escaper->escapeHtml(__('Error')) ?></th>
                                                     <td>
                                                         <?php if ($transaction->getErrorCode()): ?>
-                                                            <strong><?= $block->escapeHtml(__('Code')) ?>:</strong> <?= $block->escapeHtml($transaction->getErrorCode()) ?><br>
+                                                            <strong><?= $escaper->escapeHtml(__('Code')) ?>:</strong> <?= $escaper->escapeHtml($transaction->getErrorCode()) ?><br>
                                                         <?php endif; ?>
                                                         <?php if ($transaction->getErrorMessage()): ?>
-                                                            <strong><?= $block->escapeHtml(__('Message')) ?>:</strong> <?= $block->escapeHtml($transaction->getErrorMessage()) ?>
+                                                            <strong><?= $escaper->escapeHtml(__('Message')) ?>:</strong> <?= $escaper->escapeHtml($transaction->getErrorMessage()) ?>
                                                         <?php endif; ?>
                                                     </td>
                                                 </tr>
@@ -159,59 +149,59 @@ $transactions = $block->getTransactionHistory();
 
                                         <?php if ($transaction->getRequestData()): ?>
                                         <div class="transaction-section">
-                                            <h4><?= $block->escapeHtml(__('Request Data')) ?></h4>
-                                            <pre class="transaction-data"><?= $block->escapeHtml(json_encode($block->decodeData($transaction->getRequestData()), JSON_PRETTY_PRINT)) ?></pre>
+                                            <h4><?= $escaper->escapeHtml(__('Request Data')) ?></h4>
+                                            <pre class="transaction-data"><?= $escaper->escapeHtml(json_encode($block->decodeData($transaction->getRequestData()), JSON_PRETTY_PRINT)) ?></pre>
                                         </div>
                                         <?php endif; ?>
 
                                         <?php if ($transaction->getResponseData()): ?>
                                         <div class="transaction-section">
-                                            <h4><?= $block->escapeHtml(__('Response Data')) ?></h4>
-                                            <pre class="transaction-data"><?= $block->escapeHtml(json_encode($block->decodeData($transaction->getResponseData()), JSON_PRETTY_PRINT)) ?></pre>
+                                            <h4><?= $escaper->escapeHtml(__('Response Data')) ?></h4>
+                                            <pre class="transaction-data"><?= $escaper->escapeHtml(json_encode($block->decodeData($transaction->getResponseData()), JSON_PRETTY_PRINT)) ?></pre>
                                         </div>
                                         <?php endif; ?>
 
                                         <?php if ($transaction->getWebhookData()): ?>
                                         <div class="transaction-section">
-                                            <h4><?= $block->escapeHtml(__('Webhook Data')) ?></h4>
-                                            <pre class="transaction-data"><?= $block->escapeHtml(json_encode($block->decodeData($transaction->getWebhookData()), JSON_PRETTY_PRINT)) ?></pre>
+                                            <h4><?= $escaper->escapeHtml(__('Webhook Data')) ?></h4>
+                                            <pre class="transaction-data"><?= $escaper->escapeHtml(json_encode($block->decodeData($transaction->getWebhookData()), JSON_PRETTY_PRINT)) ?></pre>
                                         </div>
                                         <?php endif; ?>
 
                                         <?php
                                         $statusHistory = $block->getStatusHistory($transaction);
                                         if (!empty($statusHistory)):
-                                        ?>
+                                            ?>
                                         <div class="transaction-section">
-                                            <h4><?= $block->escapeHtml(__('Status History')) ?></h4>
+                                            <h4><?= $escaper->escapeHtml(__('Status History')) ?></h4>
                                             <table class="data-table">
                                                 <thead>
                                                     <tr>
-                                                        <th><?= $block->escapeHtml(__('Date')) ?></th>
-                                                        <th><?= $block->escapeHtml(__('From')) ?></th>
-                                                        <th><?= $block->escapeHtml(__('To')) ?></th>
-                                                        <th><?= $block->escapeHtml(__('User')) ?></th>
+                                                        <th><?= $escaper->escapeHtml(__('Date')) ?></th>
+                                                        <th><?= $escaper->escapeHtml(__('From')) ?></th>
+                                                        <th><?= $escaper->escapeHtml(__('To')) ?></th>
+                                                        <th><?= $escaper->escapeHtml(__('User')) ?></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($statusHistory as $history): ?>
                                                     <tr>
-                                                        <td><?= $block->escapeHtml($history['timestamp'] ?? '') ?></td>
+                                                        <td><?= $escaper->escapeHtml($block->formatDateTimeExact($history['timestamp'] ?? '')) ?></td>
                                                         <td>
                                                             <?php if (isset($history['from'])): ?>
-                                                            <span class="<?= $block->escapeHtmlAttr($block->getTransactionStatusClass($history['from'])) ?>">
-                                                                <span><?= $block->escapeHtml($block->getTransactionStatusLabel($history['from'])) ?></span>
+                                                            <span class="<?= $escaper->escapeHtmlAttr($block->getTransactionStatusClass($history['from'])) ?>">
+                                                                <span><?= $escaper->escapeHtml($block->getTransactionStatusLabel($history['from'])) ?></span>
                                                             </span>
                                                             <?php endif; ?>
                                                         </td>
                                                         <td>
                                                             <?php if (isset($history['to'])): ?>
-                                                            <span class="<?= $block->escapeHtmlAttr($block->getTransactionStatusClass($history['to'])) ?>">
-                                                                <span><?= $block->escapeHtml($block->getTransactionStatusLabel($history['to'])) ?></span>
+                                                            <span class="<?= $escaper->escapeHtmlAttr($block->getTransactionStatusClass($history['to'])) ?>">
+                                                                <span><?= $escaper->escapeHtml($block->getTransactionStatusLabel($history['to'])) ?></span>
                                                             </span>
                                                             <?php endif; ?>
                                                         </td>
-                                                        <td><?= $block->escapeHtml($history['user'] ?? '') ?></td>
+                                                        <td><?= $escaper->escapeHtml($history['user'] ?? '') ?></td>
                                                     </tr>
                                                     <?php endforeach; ?>
                                                 </tbody>
@@ -260,10 +250,10 @@ $transactions = $block->getTransactionHistory();
                 var transactionId = $(this).data('transaction-id');
                 $('#transaction-details-' + transactionId).toggle();
 
-                if ($(this).text() === '<?= $block->escapeJs(__('Details')) ?>') {
-                    $(this).text('<?= $block->escapeJs(__('Hide')) ?>');
+                if ($(this).text() === '<?= $escaper->escapeJs(__('Details')) ?>') {
+                    $(this).text('<?= $escaper->escapeJs(__('Hide')) ?>');
                 } else {
-                    $(this).text('<?= $block->escapeJs(__('Details')) ?>');
+                    $(this).text('<?= $escaper->escapeJs(__('Details')) ?>');
                 }
             });
         });

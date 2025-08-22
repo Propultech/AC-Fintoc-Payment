@@ -2,6 +2,8 @@
 
 namespace Fintoc\Payment\Exceptions;
 
+use Throwable;
+
 /**
  * Exception thrown when a resource is not found.
  */
@@ -24,7 +26,7 @@ class ResourceNotFoundException extends ApiException
      * @param string|null $resourceParam The resource parameter.
      * @param string $message The exception message.
      * @param int $code The exception code.
-     * @param \Throwable|null $previous The previous exception.
+     * @param Throwable|null $previous The previous exception.
      * @param array $errorData Additional error data.
      * @param string|null $requestId The request ID.
      * @param string|null $method The HTTP method.
@@ -32,16 +34,16 @@ class ResourceNotFoundException extends ApiException
      * @param int|null $statusCode The HTTP status code.
      */
     public function __construct(
-        string $resourceType = null,
-        string $resourceParam = null,
-        string $message = "Resource not found",
-        int $code = 404,
-        \Throwable $previous = null,
-        array $errorData = [],
-        string $requestId = null,
-        string $method = null,
-        string $path = null,
-        int $statusCode = 404
+        string     $resourceType = null,
+        string     $resourceParam = null,
+        string     $message = "Resource not found",
+        int        $code = 404,
+        Throwable $previous = null,
+        array      $errorData = [],
+        string     $requestId = null,
+        string     $method = null,
+        string     $path = null,
+        int        $statusCode = 404
     ) {
         parent::__construct($message, $code, $previous, $errorData, $requestId, $method, $path, $statusCode);
         $this->resourceType = $resourceType;

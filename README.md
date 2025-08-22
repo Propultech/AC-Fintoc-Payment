@@ -124,5 +124,52 @@ Error responses:
 - Configuration is centralized in `Fintoc\Payment\Service\ConfigurationService` (do not inject `ScopeConfigInterface` directly).
 - Commit and Webhook controllers restore the quote on failures/cancellations so customers can retry checkout.
 
+## Refunds
+Fintoc_Payment includes an Online Refunds capability integrated with Magento orders and a dedicated admin UI.
+
+- Config path: Stores → Configuration → Sales → Payment Methods → Fintoc → Refunds
+  - Enable Refunds (config: `payment/fintoc_payment/refunds_enabled`)
+  - Allow Partial Refunds (config: `payment/fintoc_payment/refunds_allow_partial`)
+  - Auto-create Credit Memo on Refund Succeeded (config: `payment/fintoc_payment/refunds_auto_creditmemo`)
+  - Order Status mappings for Pending/Succeeded/Failed/Canceled
+
+- How it works
+  - Orders paid with this method (`fintoc_payment`) can be refunded through Fintoc.
+  - The service converts the refund amount to cents and calls Fintoc via the Refunds API client.
+  - A local refund transaction is stored as Pending and later updated by the webhook once Fintoc completes the refund.
+  - Pending refunds can be canceled if supported by the provider (handled by the `cancelRefund` method).
+
+- Admin UI
+  - The module exposes a Refundable Orders grid (UI component `fintoc_refunds_orders_grid`), accessible under the Fintoc admin area.
+  - From there, you can request a refund and optionally cancel pending ones (subject to provider support and permissions).
+
+- Webhooks
+  - The same webhook endpoint used for payments (`/fintoc/webhook/index`) also accepts refund notifications.
+  - Status mapping in code treats `succeeded/completed` as Success, `failed/error` as Failed, `canceled/cancelled` as Canceled, others as Pending.
+
+- Limitations & notes
+  - Only orders paid with Fintoc (`fintoc_payment`) are eligible.
+  - Amount must be greater than zero and not exceed the refundable amount. When partial refunds are disabled, you must refund the full refundable amount.
+  - Currency defaults to the order currency.
+  - The Refunds API client included here is a stub; integrate your real HTTP client for production.
+  - The "Auto-create Credit Memo" configuration is provided for projects that implement this via observers; by default, this module does not automatically create Magento Credit Memos on refund success.
+
+## Tests
+This module includes unit tests following Magento 2 testing conventions.
+
+- Location: `app/code/Fintoc/Payment/Test/Unit`
+  - Example: `Block/Info/FintocTest.php` validates the payment info block output.
+
+- Prerequisites
+  - Install dev dependencies (ensure `phpunit/phpunit` is installed):
+    - Composer-based projects: `composer install` (without `--no-dev`), or `composer install --dev` depending on your setup.
+  - Ensure Magento’s unit test framework config is present at `dev/tests/unit/phpunit.xml.dist`.
+
+- Running tests
+  - From project root, run:
+    - `vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Fintoc/Payment/Test/Unit`
+  - To run a single test file:
+    - `vendor/bin/phpunit -c dev/tests/unit/phpunit.xml.dist app/code/Fintoc/Payment/Test/Unit/Block/Info/FintocTest.php`
+
 ## License
 GPL-3.0. See LICENSE.

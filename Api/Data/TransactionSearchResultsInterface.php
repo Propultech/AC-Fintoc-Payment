@@ -17,14 +17,14 @@ interface TransactionSearchResultsInterface extends SearchResultsInterface
     /**
      * Get transactions list
      *
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface[]
+     * @return TransactionInterface[]
      */
     public function getItems();
 
     /**
      * Set transactions list
      *
-     * @param \Fintoc\Payment\Api\Data\TransactionInterface[] $items
+     * @param TransactionInterface[] $items
      * @return $this
      */
     public function setItems(array $items);

@@ -1,10 +1,9 @@
 <?php
-/** @var \Fintoc\Payment\Block\Checkout\Success $block */
-use Magento\Framework\Escaper;
 
-if (!$block->canShow()) {
-    return;
-}
+use Fintoc\Payment\Block\Checkout\Success;
+use Magento\Framework\Escaper;
+/** @var Success $block */
+/** @var Escaper $escaper */
 
 $rows = $block->getRows();
 if (!$rows) {
@@ -13,14 +12,14 @@ if (!$rows) {
 ?>
 <div class="fintoc-payment-info" data-bind="scope: 'fintoc-payment-info'">
     <div class="checkout-success-fintoc-title">
-        <strong><?php /* @var Escaper $escaper */ echo $block->escapeHtml(__('Payment Information')); ?></strong>
+        <strong><?= /* @var Escaper $escaper */ $escaper->escapeHtml(__('Payment Information')); ?></strong>
     </div>
     <table class="data table fintoc-payment-table">
         <tbody>
         <?php foreach ($rows as $label => $value): ?>
             <tr>
-                <th scope="row"><?= $block->escapeHtml((string)$label); ?></th>
-                <td><?= $value; ?></td>
+                <th scope="row"><?= $escaper->escapeHtml((string)$label); ?></th>
+                <td><?= $escaper->escapeHtml((string)$value); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

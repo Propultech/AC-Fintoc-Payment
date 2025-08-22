@@ -12,6 +12,10 @@
     <!-- Configuration Service -->
     <preference for="Fintoc\Payment\Api\ConfigurationServiceInterface" type="Fintoc\Payment\Service\ConfigurationService" />
 
+    <!-- Refund Services -->
+    <preference for="Fintoc\Payment\Api\RefundServiceInterface" type="Fintoc\Payment\Service\RefundService" />
+    <preference for="Fintoc\Payment\Api\RefundsApiClientInterface" type="Fintoc\Payment\Service\RefundsApiClient" />
+
     <!-- Data Interfaces -->
     <preference for="Fintoc\Payment\Api\Data\TransactionInterface" type="Fintoc\Payment\Model\Transaction" />
     <preference for="Fintoc\Payment\Api\Data\TransactionSearchResultsInterface" type="Fintoc\Payment\Model\TransactionSearchResults" />
@@ -21,6 +25,7 @@
             <argument name="collections" xsi:type="array">
                 <item name="fintoc_payment_grid_data_source" xsi:type="string">Fintoc\Payment\Model\ResourceModel\Payment\Grid\Collection</item>
                 <item name="fintoc_payment_transactions_grid_data_source" xsi:type="string">Fintoc\Payment\Model\ResourceModel\Transaction\Grid\Collection</item>
+                <item name="fintoc_refunds_orders_grid_data_source" xsi:type="string">Fintoc\Payment\Model\ResourceModel\Payment\RefundableGrid\Collection</item>
             </argument>
         </arguments>
     </type>
@@ -31,6 +36,13 @@
             <argument name="resourceModel" xsi:type="string">Magento\Sales\Model\ResourceModel\Order\Payment</argument>
         </arguments>
     </virtualType>
+
+    <type name="Fintoc\Payment\Model\ResourceModel\Payment\RefundableGrid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">sales_order_payment</argument>
+            <argument name="resourceModel" xsi:type="string">Magento\Sales\Model\ResourceModel\Order\Payment</argument>
+        </arguments>
+    </type>
 
     <virtualType name="Fintoc\Payment\Model\ResourceModel\Transaction\Grid\Collection" type="Magento\Framework\View\Element\UiComponent\DataProvider\SearchResult">
         <arguments>

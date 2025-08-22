@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile - CLI test helper script, not part of production code
 /**
  * Copyright © Fintoc. All rights reserved.
  */
@@ -6,6 +7,7 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Test;
 
+use Exception;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\TransactionRepositoryInterface;
 use Fintoc\Payment\Api\TransactionServiceInterface;
@@ -42,7 +44,7 @@ try {
     try {
         $order = $orderRepository->get($testOrderId);
         echo "Found test order #{$order->getIncrementId()}\n";
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         die("Error: Could not find test order with ID {$testOrderId}. Please update the test script with a valid order ID.\n");
     }
 
@@ -169,7 +171,7 @@ try {
 } catch (LocalizedException $e) {
     echo "Magento Exception: " . $e->getMessage() . "\n";
     echo "Trace: " . $e->getTraceAsString() . "\n";
-} catch (\Exception $e) {
+} catch (Exception $e) {
     echo "General Exception: " . $e->getMessage() . "\n";
     echo "Trace: " . $e->getTraceAsString() . "\n";
 }

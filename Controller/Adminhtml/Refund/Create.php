@@ -8,6 +8,7 @@ use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Backend\Model\View\Result\Redirect;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Exception\LocalizedException;
@@ -35,6 +36,17 @@ class Create extends Action
     private Json $json;
     private FormKeyValidator $formKeyValidator;
 
+    /**
+     * @param Context $context
+     * @param PageFactory $resultPageFactory
+     * @param OrderRepositoryInterface $orderRepository
+     * @param RefundServiceInterface $refundService
+     * @param ConfigurationServiceInterface $configService
+     * @param CreditmemoFactory $creditmemoFactory
+     * @param CreditmemoManagementInterface $creditmemoManagement
+     * @param Json $json
+     * @param FormKeyValidator $formKeyValidator
+     */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory,
@@ -57,6 +69,9 @@ class Create extends Action
         $this->formKeyValidator = $formKeyValidator;
     }
 
+    /**
+     * @return ResultInterface
+     */
     public function execute(): ResultInterface
     {
         $request = $this->getRequest();
@@ -70,9 +85,16 @@ class Create extends Action
         return $resultPage;
     }
 
+    /**
+     * Processes a refund request for an order, validating input parameters, verifying order and payment details,
+     * and interacting with the Fintoc refund service. Optionally, creates a credit memo based on configuration.
+     *
+     * @param RequestInterface $request The HTTP request containing refund parameters such as order ID, mode, amount, comment, and quantities.
+     * @return ResultInterface A redirect result leading to the appropriate page based on the success or failure of the operation.
+     */
     private function processPost(RequestInterface $request): ResultInterface
     {
-        /** @var \Magento\Backend\Model\View\Result\Redirect $redirect */
+        /** @var Redirect $redirect */
         $redirect = $this->resultFactory->create(ResultFactory::TYPE_REDIRECT);
 
         if (!$this->formKeyValidator->validate($request)) {
@@ -166,6 +188,12 @@ class Create extends Action
         return $redirect->setPath('*/*/create', ['order_id' => $orderId]);
     }
 
+    /**
+     * Computes the refundable amount for a given order by evaluating the total paid and subtracting the total refunded.
+     *
+     * @param Order $order The order for which the refundable amount is calculated.
+     * @return float The calculated refundable amount, rounded to two decimal places.
+     */
     private function computeRefundableAmount(Order $order): float
     {
         $totalPaid = (float)$order->getTotalPaid();

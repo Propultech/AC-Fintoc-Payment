@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Block\Adminhtml\Refund;
 
+use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\TransactionServiceInterface;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Sales\Model\Order;
 
@@ -19,17 +19,33 @@ class Create extends Template
     /** @var TransactionServiceInterface */
     private TransactionServiceInterface $transactionService;
 
+    /** @var ConfigurationServiceInterface */
+    private ConfigurationServiceInterface $configService;
+
+    /**
+     * @param Context $context
+     * @param OrderRepositoryInterface $orderRepository
+     * @param TransactionServiceInterface $transactionService
+     * @param ConfigurationServiceInterface $configService
+     * @param array $data
+     */
     public function __construct(
-        Context $context,
-        OrderRepositoryInterface $orderRepository,
-        TransactionServiceInterface $transactionService,
-        array $data = []
-    ) {
+        Context                       $context,
+        OrderRepositoryInterface      $orderRepository,
+        TransactionServiceInterface   $transactionService,
+        ConfigurationServiceInterface $configService,
+        array                         $data = []
+    )
+    {
         parent::__construct($context, $data);
         $this->orderRepository = $orderRepository;
         $this->transactionService = $transactionService;
+        $this->configService = $configService;
     }
 
+    /**
+     * @return Order|null
+     */
     public function getOrder(): ?Order
     {
         $orderId = (int)$this->getRequest()->getParam('order_id');
@@ -44,6 +60,10 @@ class Create extends Template
         }
     }
 
+    /**
+     * @param Order $order
+     * @return float
+     */
     public function getRefundableAmount(Order $order): float
     {
         $totalPaid = (float)$order->getTotalPaid();
@@ -90,8 +110,30 @@ class Create extends Template
         return $items;
     }
 
+    /**
+     * @param Order $order
+     * @param float $amount
+     * @return string
+     */
     public function formatPrice(Order $order, float $amount): string
     {
         return $order->formatPrice($amount);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPartialAllowed(): bool
+    {
+        return (bool)$this->configService->getConfig('payment/fintoc_payment/refunds_allow_partial');
+    }
+
+    /**
+     * @param Order $order
+     * @return string
+     */
+    public function getCurrencyCode(Order $order): string
+    {
+        return (string)$order->getOrderCurrencyCode();
     }
 }

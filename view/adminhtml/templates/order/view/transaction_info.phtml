@@ -61,6 +61,19 @@ $transactions = $block->getTransactionHistory();
                                     <a href="#" class="action-show-hide" data-transaction-id="<?= $escaper->escapeHtmlAttr($transaction->getEntityId()) ?>">
                                         <?= $escaper->escapeHtml(__('Details')) ?>
                                     </a>
+                                    <?php if (strtolower((string)$transaction->getType()) === 'refund' && strtolower((string)$transaction->getStatus()) === 'pending'): ?>
+                                        <form method="post" action="<?= $escaper->escapeUrl($block->getUrl('fintoc_refunds/refund/cancel')) ?>" style="display:inline-block; margin-left:10px;">
+                                            <?= /* form key */ $block->getBlockHtml('formkey') ?>
+                                            <?php $order = $block->getOrder(); ?>
+                                            <?php if ($order): ?>
+                                                <input type="hidden" name="order_id" value="<?= (int)$order->getId() ?>" />
+                                            <?php endif; ?>
+                                            <input type="hidden" name="refund_id" value="<?= $escaper->escapeHtmlAttr($transaction->getTransactionId()) ?>" />
+                                            <button type="submit" class="action-secondary" onclick="return confirm('<?= $escaper->escapeJs(__('Are you sure you want to cancel this refund?')) ?>');">
+                                                <span><?= $escaper->escapeHtml(__('Cancel Refund')) ?></span>
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <tr id="transaction-details-<?= $escaper->escapeHtmlAttr($transaction->getEntityId()) ?>" class="transaction-details" style="display: none;">

@@ -2,7 +2,7 @@
     "name": "fintoc/magento2-payment",
     "description": "Fintoc Payment integration for Adobe Commerce",
     "type": "magento2-module",
-    "version": "0.0.2",
+    "version": "0.9.0",
     "license": "GPL-3.0",
     "require": {
         "php": "~7.4||~8.1.0||~8.2.0||~8.3.0",

@@ -40,6 +40,9 @@ class RefundService implements RefundServiceInterface
         $this->logger = $logger;
     }
 
+    /**
+     * @throws LocalizedException
+     */
     public function requestRefund(OrderInterface $order, float $amount, ?string $currency = null, array $metadata = []): TransactionInterface
     {
         $currency = $currency ?: (string)$order->getOrderCurrencyCode();
@@ -88,7 +91,7 @@ class RefundService implements RefundServiceInterface
         }
 
         // Create local refund transaction as pending
-        $transaction = $this->transactionService->createRefundTransaction(
+        return $this->transactionService->createRefundTransaction(
             $externalId,
             $order,
             $amount,
@@ -98,8 +101,6 @@ class RefundService implements RefundServiceInterface
             TransactionInterface::STATUS_PENDING,
             ['created_by' => 'admin']
         );
-
-        return $transaction;
     }
 
     private function getRefundableAmount(OrderInterface $order): float

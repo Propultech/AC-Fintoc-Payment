@@ -48,14 +48,6 @@ class RefundActions extends Column
                 $viewOrderUrl = $this->urlBuilder->getUrl('sales/order/view', ['order_id' => $orderId]);
                 $requestRefundUrl = $this->urlBuilder->getUrl('fintoc_refunds/refund/create', ['order_id' => $orderId]);
 
-                // Build transactions grid URL pre-filtered to this order's refunds
-                $incrementId = isset($item['order_increment_id']) ? (string)$item['order_increment_id'] : null;
-                $filters = ['type' => 'refund'];
-                if ($incrementId !== null && $incrementId !== '') {
-                    $filters['order_increment_id'] = $incrementId;
-                }
-                $transactionsUrl = $this->urlBuilder->getUrl('fintoc/transactions/index', ['filters' => $filters]);
-
                 $item[$this->getData('name')] = [
                     'view' => [
                         'href' => $viewOrderUrl,
@@ -65,11 +57,6 @@ class RefundActions extends Column
                     'refund' => [
                         'href' => $requestRefundUrl,
                         'label' => __('Request Refund'),
-                        'hidden' => false,
-                    ],
-                    'transactions' => [
-                        'href' => $transactionsUrl,
-                        'label' => __('View Refund Transactions'),
                         'hidden' => false,
                     ],
                 ];

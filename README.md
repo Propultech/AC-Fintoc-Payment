@@ -8,7 +8,7 @@ Fintoc_Payment integrates the Fintoc Redirect Page flow into Magento 2 to collec
 
 ## Requirements
 - Magento 2.4.x
-- PHP 8.1/8.2 (per your Magento version)
+- PHP 7.4, 8.1, 8.2, 8.3 (aligned with your Magento version)
 - Publicly accessible base URL to allow Fintoc to call your webhooks and for customers to return after payment
 
 ## Installation (strongly recommended steps)
@@ -64,6 +64,16 @@ Key settings:
 - Maximum Order Amount: if the quote grand total exceeds this value, the payment method is hidden at checkout.
 - Debug mode / Logging options / Sort order
 
+Refunds-specific settings (under Fintoc → Refunds):
+- Enable Refunds: `payment/fintoc_payment/refunds_enabled`
+- Allow Partial Refunds: `payment/fintoc_payment/refunds_allow_partial`
+- Auto-create Credit Memo on Refund Succeeded: `payment/fintoc_payment/refunds_auto_creditmemo`
+- Order Status on Refund Pending/Succeeded/Failed/Canceled
+- Refundable Order Statuses (multiselect): `payment/fintoc_payment/refundable_statuses` (limits the “Refundable Orders” grid and actions to selected statuses)
+- API Base URL: `payment/fintoc_payment/api_base_url` (default `https://api.fintoc.com`)
+- Refund Create Path: `payment/fintoc_payment/refunds_create_path` (default `/v1/refunds`)
+- Refund Cancel Path: `payment/fintoc_payment/refunds_cancel_path` (default `/v1/refunds/{id}/cancel`)
+
 Supported currency: CLP.
 
 ## How the flow works
@@ -91,6 +101,12 @@ Events handled (with order status history traces):
 - checkout_session.finished → adds a trace comment.
 - checkout_session.expired → cancels the order, records trace, restores the quote.
 
+Refund webhooks:
+- refund.pending → sets refund transaction to pending
+- refund.succeeded/completed → sets refund transaction to success (can trigger credit memo via project observers if configured)
+- refund.failed/error → sets refund transaction to failed
+- refund.canceled/cancelled → sets refund transaction to canceled
+
 Signature verification:
 - If header `Fintoc-Signature` is present, it is verified using the configured Webhook Secret.
 - On verification failure the module responds with 5xx and also leaves a status history comment on the related order (when determinable) and stores the error under payment additional information (`fintoc_webhook_signature_error`).
@@ -107,6 +123,8 @@ Error responses:
 - Success page: shows a Payment Information table (block `Fintoc\Payment\Block\Checkout\Success`).
 - Order view (admin and frontend): payment info block `Fintoc\Payment\Block\Info\Fintoc` displays IDs, status, amount/currency, reference, dates, and masked sender account details.
 - Admin grid: Sales → Fintoc → Transactions lists all rows from `fintoc_payment_transactions` with filters and export button.
+- Refundable Orders grid: shows orders paid with Fintoc that are eligible per configured refundable statuses; from here, admins can request refunds and cancel pending ones.
+- Refund form UX: includes form key, amount with currency and max note, per-item quantities, and client-side validation. When partial refunds are disabled, partial modes are not allowed.
 
 ## Logging & troubleshooting
 - Logs: `var/log/fintoc.log` (Monolog). Enable Debug Mode in config for verbose output.
@@ -118,41 +136,41 @@ Error responses:
 - If the payment method is not visible at checkout:
   - Confirm it’s enabled.
   - Ensure the quote currency is CLP and grand total ≤ Maximum Order Amount (if set).
+- If refunds fail with client errors, check the payload mapping (resource_id/resource_type) and that API Base URL and endpoints match your Fintoc environment.
 
 ## Development notes
 - HTTP client: GuzzleHttp (configured via DI with sensible timeouts and disabled `http_errors`).
+- DI preference maps `GuzzleHttp\\ClientInterface` to `GuzzleHttp\\Client` to support both Guzzle 6 and 7; only `ClientInterface` is type-hinted in services.
 - Configuration is centralized in `Fintoc\Payment\Service\ConfigurationService` (do not inject `ScopeConfigInterface` directly).
 - Commit and Webhook controllers restore the quote on failures/cancellations so customers can retry checkout.
 
-## Refunds
-Fintoc_Payment includes an Online Refunds capability integrated with Magento orders and a dedicated admin UI.
+## Refunds (API details)
+The module includes a real Refunds API client using Guzzle.
 
-- Config path: Stores → Configuration → Sales → Payment Methods → Fintoc → Refunds
-  - Enable Refunds (config: `payment/fintoc_payment/refunds_enabled`)
-  - Allow Partial Refunds (config: `payment/fintoc_payment/refunds_allow_partial`)
-  - Auto-create Credit Memo on Refund Succeeded (config: `payment/fintoc_payment/refunds_auto_creditmemo`)
-  - Order Status mappings for Pending/Succeeded/Failed/Canceled
+- Create refund
+  - Method/URL: POST `${api_base_url}${refunds_create_path}` (default `https://api.fintoc.com/v1/refunds`)
+  - Headers: `Authorization: Bearer <secret>`, `Accept: application/json`, `Content-Type: application/json`, `Idempotency-Key: magento-<hash>`
+  - JSON body:
+    - `resource_id`: Payment Intent ID
+    - `resource_type`: `payment_intent`
+    - `amount`: integer (minor units/cents)
+    - `currency`: e.g., `CLP`
+    - `metadata`: optional
+  - Response handling: stores external refund id `id` and initial `status` (usually `pending`). Errors surface detailed messages from Fintoc in logs and exceptions.
 
-- How it works
-  - Orders paid with this method (`fintoc_payment`) can be refunded through Fintoc.
-  - The service converts the refund amount to cents and calls Fintoc via the Refunds API client.
-  - A local refund transaction is stored as Pending and later updated by the webhook once Fintoc completes the refund.
-  - Pending refunds can be canceled if supported by the provider (handled by the `cancelRefund` method).
+- Cancel refund
+  - Method/URL: POST `${api_base_url}${refunds_cancel_path}` with `{id}` replaced by the external refund id (default `/v1/refunds/{id}/cancel`)
+  - Headers: `Authorization: Bearer <secret>`, `Accept: application/json`
+  - Response handling: marks as canceled when status is `canceled/cancelled` or `canceled: true`.
 
-- Admin UI
-  - The module exposes a Refundable Orders grid (UI component `fintoc_refunds_orders_grid`), accessible under the Fintoc admin area.
-  - From there, you can request a refund and optionally cancel pending ones (subject to provider support and permissions).
+- Idempotency
+  - The client builds an idempotency key using payment intent, amount, currency, and optional metadata mode to avoid duplicate refunds.
 
-- Webhooks
-  - The same webhook endpoint used for payments (`/fintoc/webhook/index`) also accepts refund notifications.
-  - Status mapping in code treats `succeeded/completed` as Success, `failed/error` as Failed, `canceled/cancelled` as Canceled, others as Pending.
+- Status lifecycle
+  - pending → succeeded/failed/canceled. Webhooks update the local transaction accordingly.
 
-- Limitations & notes
-  - Only orders paid with Fintoc (`fintoc_payment`) are eligible.
-  - Amount must be greater than zero and not exceed the refundable amount. When partial refunds are disabled, you must refund the full refundable amount.
-  - Currency defaults to the order currency.
-  - The Refunds API client included here is a stub; integrate your real HTTP client for production.
-  - The "Auto-create Credit Memo" configuration is provided for projects that implement this via observers; by default, this module does not automatically create Magento Credit Memos on refund success.
+- Partial refunds
+  - Enforced by config: if disabled, the admin form disallows partial modes and the service requires the full refundable amount.
 
 ## Tests
 This module includes unit tests following Magento 2 testing conventions.

@@ -8,8 +8,8 @@ namespace Fintoc\Payment\Controller\Adminhtml\Transactions;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
-use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\Controller\Result\Redirect;
+use Magento\Framework\Controller\ResultFactory;
 use Magento\Framework\View\Result\Page;
 
 class View extends Action
@@ -17,7 +17,7 @@ class View extends Action
     /**
      * Authorization level
      */
-    const ADMIN_RESOURCE = 'Fintoc_Payment::transactions';
+    public const ADMIN_RESOURCE = 'Fintoc_Payment::transactions';
 
     /**
      * @param Context $context

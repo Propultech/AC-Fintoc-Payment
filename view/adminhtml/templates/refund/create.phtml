@@ -1,0 +1,206 @@
+<?php
+/** @var \Fintoc\Payment\Block\Adminhtml\Refund\Create $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$order = $block->getOrder();
+?>
+<div class="page-main-actions">
+    <div class="page-actions">
+        <?php if ($order): ?>
+            <a href="<?= $escaper->escapeUrl($block->getUrl('sales/order/view', ['order_id' => $order->getId()])) ?>"
+               class="action-secondary">
+                <?= $escaper->escapeHtml(__('Back to Order')) ?>
+            </a>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php if (!$order): ?>
+    <div class="message message-error">
+        <div><?= $escaper->escapeHtml(__('Order not found or missing.')) ?></div>
+    </div>
+    <?php return; endif; ?>
+
+<?php
+$refundable = $block->getRefundableAmount($order);
+$items = $block->getItemData($order);
+$currencyCode = $block->getCurrencyCode($order);
+$allowPartial = $block->isPartialAllowed();
+?>
+
+<div class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span
+            class="title"><?= $escaper->escapeHtml(__('Request Fintoc Refund for Order #%1', $order->getIncrementId())) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <form action="<?= $escaper->escapeUrl($block->getUrl('fintoc_refunds/refund/create')) ?>" method="post"
+              id="fintoc-refund-form">
+            <?= /* form key */
+            $block->getBlockHtml('formkey') ?>
+            <input type="hidden" name="order_id" value="<?= (int)$order->getId() ?>"/>
+
+            <div class="admin__field field">
+                <label class="label"><span><?= $escaper->escapeHtml(__('Order Total Paid')) ?></span></label>
+                <div class="control">
+                    <strong><?= /* @noEscape */
+                        $order->formatPrice((float)($order->getTotalPaid() ?: $order->getGrandTotal())) ?></strong>
+                </div>
+            </div>
+
+            <div class="admin__field field">
+                <label class="label"><span><?= $escaper->escapeHtml(__('Refundable Amount')) ?></span></label>
+                <div class="control">
+                    <strong><?= /* @noEscape */
+                        $block->formatPrice($order, $refundable) ?></strong>
+                </div>
+            </div>
+
+            <fieldset class="admin__fieldset">
+                <legend><?= $escaper->escapeHtml(__('Refund Mode')) ?></legend>
+                <div class="admin__field field">
+                    <div class="control">
+                        <label class="admin__field-option">
+                            <input type="radio" name="mode" value="full" checked="checked"/>
+                            <span><?= $escaper->escapeHtml(__('Full refundable amount')) ?></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="admin__field field">
+                    <div class="control">
+                        <label class="admin__field-option">
+                            <input type="radio" name="mode"
+                                   value="items" <?= $allowPartial ? '' : 'disabled="disabled"' ?> />
+                            <span><?= $escaper->escapeHtml(__('Partial by items/quantities')) ?></span>
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div id="items-section" style="display:none; margin-top:15px;">
+                <div class="admin__control-table-wrapper">
+                    <table class="data-table admin__control-table">
+                        <thead>
+                        <tr>
+                            <th><?= $escaper->escapeHtml(__('Product')) ?></th>
+                            <th><?= $escaper->escapeHtml(__('SKU')) ?></th>
+                            <th><?= $escaper->escapeHtml(__('Qty to refund')) ?></th>
+                            <th><?= $escaper->escapeHtml(__('Max Qty')) ?></th>
+                            <th><?= $escaper->escapeHtml(__('Unit Price (incl. tax)')) ?></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php if (!$items): ?>
+                            <tr>
+                                <td colspan="5"><em><?= $escaper->escapeHtml(__('No refundable items.')) ?></em></td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($items as $it): ?>
+                                <tr>
+                                    <td><?= $escaper->escapeHtml($it['name']) ?></td>
+                                    <td><?= $escaper->escapeHtml($it['sku']) ?></td>
+                                    <td>
+                                        <input type="number" class="input-text" step="0.01" min="0"
+                                               max="<?= (float)$it['max_qty'] ?>" name="qty[<?= (int)$it['item_id'] ?>]"
+                                               style="width:100px;"/>
+                                    </td>
+                                    <td><?= $escaper->escapeHtml(number_format((float)$it['max_qty'], 2)) ?></td>
+                                    <td><?= $escaper->escapeHtml(number_format((float)$it['price_incl_tax'], 2)) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="note">
+                    <?= $escaper->escapeHtml(__('The final refund amount will be computed from selected item quantities.')) ?>
+                </div>
+            </div>
+
+            <div class="admin__field field" style="margin-top:15px;">
+                <label class="label"
+                       for="comment"><span><?= $escaper->escapeHtml(__('Reason / Comment')) ?></span></label>
+                <div class="control">
+                    <textarea name="comment" id="comment" rows="3" style="width: 600px;"></textarea>
+                </div>
+            </div>
+
+            <div class="actions" style="margin-top:20px;">
+                <button type="submit" class="action-primary">
+                    <span><?= $escaper->escapeHtml(__('Request Refund')) ?></span></button>
+                <a class="action-secondary"
+                   href="<?= $escaper->escapeUrl($block->getUrl('fintoc_refunds/orders/index')) ?>"
+                   style="margin-left:10px;">
+                    <?= $escaper->escapeHtml(__('Cancel')) ?>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    require(['jquery'], function ($) {
+        var allowPartial = <?= $allowPartial ? 'true' : 'false' ?>;
+        var maxAmount = <?= json_encode((float)$refundable) ?>;
+
+        function updateMode() {
+            var mode = $('input[name="mode"]:checked').val();
+            if (mode === 'amount' && allowPartial) {
+                $('#refund-amount').show();
+                $('#refund-amount-currency').show();
+                $('#amount-note').show();
+                $('#items-section').hide();
+            } else if (mode === 'items' && allowPartial) {
+                $('#refund-amount').hide();
+                $('#refund-amount-currency').hide();
+                $('#amount-note').hide();
+                $('#items-section').show();
+            } else {
+                $('#refund-amount').hide();
+                $('#refund-amount-currency').hide();
+                $('#amount-note').hide();
+                $('#items-section').hide();
+            }
+        }
+
+        $(document).on('change', 'input[name="mode"]', updateMode);
+        $('#refund-amount').on('input', function () {
+            var v = parseFloat(this.value || '0');
+            if (v > maxAmount) this.value = maxAmount.toFixed(2);
+            if (v < 0) this.value = '';
+        });
+        $('#fintoc-refund-form').on('submit', function (e) {
+            var mode = $('input[name="mode"]:checked').val();
+            if (mode === 'amount') {
+                if (!allowPartial) {
+                    e.preventDefault();
+                    alert('<?= $escaper->escapeJs(__('Partial refunds are disabled.')) ?>');
+                    return false;
+                }
+                var v = parseFloat($('#refund-amount').val() || '0');
+                if (!(v > 0) || v > maxAmount + 0.0001) {
+                    e.preventDefault();
+                    alert('<?= $escaper->escapeJs(__('Please enter a valid amount greater than 0 and up to %1', number_format((float)$refundable, 2))) ?>');
+                    return false;
+                }
+            } else if (mode === 'items') {
+                if (!allowPartial) {
+                    e.preventDefault();
+                    alert('<?= $escaper->escapeJs(__('Partial refunds are disabled.')) ?>');
+                    return false;
+                }
+                var any = false;
+                $('input[name^="qty["]').each(function () {
+                    var q = parseFloat($(this).val() || '0');
+                    if (q > 0) any = true;
+                });
+                if (!any) {
+                    e.preventDefault();
+                    alert('<?= $escaper->escapeJs(__('Please enter at least one quantity to refund.')) ?>');
+                    return false;
+                }
+            }
+        });
+        updateMode();
+    });
+</script>

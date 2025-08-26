@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Block\Adminhtml\Order\View;
 
+use Exception;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\TransactionServiceInterface;
 use Magento\Backend\Block\Template;
@@ -13,12 +14,14 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\Order;
+use Fintoc\Payment\Block\Traits\DateTimeFormatterTrait;
 
 /**
  * Block for displaying Fintoc transaction information in admin order view
  */
 class TransactionInfo extends Template
 {
+    use DateTimeFormatterTrait;
     /**
      * @var Registry
      */
@@ -42,26 +45,16 @@ class TransactionInfo extends Template
      * @param array $data
      */
     public function __construct(
-        Context $context,
-        Registry $registry,
+        Context                     $context,
+        Registry                    $registry,
         TransactionServiceInterface $transactionService,
-        Json $json,
-        array $data = []
+        Json                        $json,
+        array                       $data = []
     ) {
         parent::__construct($context, $data);
         $this->registry = $registry;
         $this->transactionService = $transactionService;
         $this->json = $json;
-    }
-
-    /**
-     * Get current order
-     *
-     * @return Order|null
-     */
-    public function getOrder(): ?Order
-    {
-        return $this->registry->registry('current_order');
     }
 
     /**
@@ -77,6 +70,16 @@ class TransactionInfo extends Template
         }
 
         return $this->transactionService->getTransactionHistoryForOrder($order);
+    }
+
+    /**
+     * Get current order
+     *
+     * @return Order|null
+     */
+    public function getOrder(): ?Order
+    {
+        return $this->registry->registry('current_order');
     }
 
     /**
@@ -170,6 +173,17 @@ class TransactionInfo extends Template
     }
 
     /**
+     * Get transaction status history
+     *
+     * @param TransactionInterface $transaction
+     * @return array
+     */
+    public function getStatusHistory(TransactionInterface $transaction): array
+    {
+        return $this->decodeData($transaction->getStatusHistory());
+    }
+
+    /**
      * Decode JSON data
      *
      * @param string|null $data
@@ -183,20 +197,9 @@ class TransactionInfo extends Template
 
         try {
             return $this->json->unserialize($data);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return [];
         }
-    }
-
-    /**
-     * Get transaction status history
-     *
-     * @param TransactionInterface $transaction
-     * @return array
-     */
-    public function getStatusHistory(TransactionInterface $transaction): array
-    {
-        return $this->decodeData($transaction->getStatusHistory());
     }
 
     /**

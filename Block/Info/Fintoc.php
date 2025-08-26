@@ -6,15 +6,18 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Block\Info;
 
+use Exception;
+use Magento\Framework\DataObject;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Element\Template\Context;
 use Magento\Payment\Block\Info;
-use Magento\Framework\DataObject;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\Order;
+use Fintoc\Payment\Block\Traits\DateTimeFormatterTrait;
 
 class Fintoc extends Info
 {
+    use DateTimeFormatterTrait;
     /**
      * @var Json
      */
@@ -27,8 +30,8 @@ class Fintoc extends Info
      */
     public function __construct(
         Context $context,
-        Json $json,
-        array $data = []
+        Json    $json,
+        array   $data = []
     ) {
         parent::__construct($context, $data);
         $this->json = $json;
@@ -82,13 +85,13 @@ class Fintoc extends Info
             $data[(string)__('Reference ID')] = (string)$ai['fintoc_reference_id'];
         }
         if (!empty($ai['fintoc_transaction_date'])) {
-            $data[(string)__('Transaction Date')] = (string)$ai['fintoc_transaction_date'];
+            $data[(string)__('Transaction Date')] = $this->formatDateTimeExact($ai['fintoc_transaction_date']);
         }
         if (!empty($ai['fintoc_transaction_completed_at'])) {
-            $data[(string)__('Completed At')] = (string)$ai['fintoc_transaction_completed_at'];
+            $data[(string)__('Completed At')] = $this->formatDateTimeExact($ai['fintoc_transaction_completed_at']);
         }
         if (!empty($ai['fintoc_transaction_canceled_at'])) {
-            $data[(string)__('Canceled At')] = (string)$ai['fintoc_transaction_canceled_at'];
+            $data[(string)__('Canceled At')] = $this->formatDateTimeExact($ai['fintoc_transaction_canceled_at']);
         }
         if (!empty($ai['fintoc_cancel_reason'])) {
             $data[(string)__('Cancel Reason')] = (string)$ai['fintoc_cancel_reason'];
@@ -118,8 +121,9 @@ class Fintoc extends Info
                         $data[(string)__('Sender Account')] = implode(' | ', $parts);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Ignore malformed json
+                unset($e);
             }
         }
 
@@ -130,6 +134,8 @@ class Fintoc extends Info
     }
 
     /**
+     * Format amount and currency row for payment info.
+     *
      * @param Order|null $order
      * @param array $ai
      * @return string|null
@@ -158,4 +164,5 @@ class Fintoc extends Info
         }
         return null;
     }
+
 }

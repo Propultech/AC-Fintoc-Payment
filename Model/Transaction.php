@@ -17,14 +17,6 @@ class Transaction extends AbstractModel implements TransactionInterface
     /**
      * @inheritDoc
      */
-    protected function _construct()
-    {
-        $this->_init(ResourceModel\Transaction::class);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getEntityId()
     {
         return $this->getData(self::ENTITY_ID) === null ? null : (int)$this->getData(self::ENTITY_ID);
@@ -388,5 +380,13 @@ class Transaction extends AbstractModel implements TransactionInterface
     public function setUpdatedAt($updatedAt)
     {
         return $this->setData(self::UPDATED_AT, $updatedAt);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function _construct()
+    {
+        $this->_init(ResourceModel\Transaction::class);
     }
 }

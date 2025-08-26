@@ -5,20 +5,21 @@
 
 namespace Fintoc\Payment\Controller\Checkout;
 
+use Exception;
+use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\Data\TransactionInterface;
+use Fintoc\Payment\Api\LoggerServiceInterface;
+use Fintoc\Payment\Api\TransactionServiceInterface;
+use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Exception\GuzzleException;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
 use Magento\Framework\Controller\ResultInterface;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Checkout\Model\Session as CheckoutSession;
-use Magento\Store\Model\StoreManagerInterface;
-use Fintoc\Payment\Api\ConfigurationServiceInterface;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Exception\GuzzleException;
-use Fintoc\Payment\Api\LoggerServiceInterface;
-use Fintoc\Payment\Api\TransactionServiceInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -78,15 +79,15 @@ class Create extends Action
      * @param TransactionServiceInterface $transactionService
      */
     public function __construct(
-        Context $context,
-        JsonFactory $resultJsonFactory,
-        CheckoutSession $checkoutSession,
-        StoreManagerInterface $storeManager,
+        Context                       $context,
+        JsonFactory                   $resultJsonFactory,
+        CheckoutSession               $checkoutSession,
+        StoreManagerInterface         $storeManager,
         ConfigurationServiceInterface $configService,
-        GuzzleClient $httpClient,
-        LoggerInterface $logger,
-        EncryptorInterface $encryptor,
-        TransactionServiceInterface $transactionService
+        GuzzleClient                  $httpClient,
+        LoggerInterface               $logger,
+        EncryptorInterface            $encryptor,
+        TransactionServiceInterface   $transactionService
     ) {
         parent::__construct($context);
         $this->resultJsonFactory = $resultJsonFactory;
@@ -123,7 +124,8 @@ class Create extends Action
 
             // Add comment to order history
             $order->addCommentToStatusHistory(
-                __('Fintoc payment initiated. Transaction ID: %1, Amount: %2 %3',
+                __(
+                    'Fintoc payment initiated. Transaction ID: %1, Amount: %2 %3',
                     $transactionId,
                     $order->getGrandTotal(),
                     $order->getOrderCurrencyCode()
@@ -222,7 +224,8 @@ class Create extends Action
 
                 // Add comment to order history
                 $order->addCommentToStatusHistory(
-                    __('Fintoc payment failed. Transaction ID: %1, Error: %2',
+                    __(
+                        'Fintoc payment failed. Transaction ID: %1, Error: %2',
                         $transactionId,
                         $e->getMessage()
                     )
@@ -241,7 +244,7 @@ class Create extends Action
                 // Restore quote so the customer can try again
                 try {
                     $this->checkoutSession->restoreQuote();
-                } catch (\Exception $ex) {
+                } catch (Exception $ex) {
                     $this->logger->debug('Restore quote failed after API error: ' . $ex->getMessage());
                 }
 
@@ -254,7 +257,8 @@ class Create extends Action
             if (!isset($response['redirect_url'])) {
                 // Add comment to order history
                 $order->addCommentToStatusHistory(
-                    __('Fintoc payment failed. Transaction ID: %1, Error: Invalid response from Fintoc API',
+                    __(
+                        'Fintoc payment failed. Transaction ID: %1, Error: Invalid response from Fintoc API',
                         $transactionId
                     )
                 );
@@ -275,7 +279,7 @@ class Create extends Action
                 // Restore quote so the customer can try again
                 try {
                     $this->checkoutSession->restoreQuote();
-                } catch (\Exception $ex) {
+                } catch (Exception $ex) {
                     $this->logger->debug('Restore quote failed after invalid response: ' . $ex->getMessage());
                 }
 
@@ -286,12 +290,12 @@ class Create extends Action
                 'success' => true,
                 'redirect_url' => $response['redirect_url']
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error creating Fintoc checkout session: ' . $e->getMessage(), ['exception' => $e]);
             // Restore quote on any failure in create controller
             try {
                 $this->checkoutSession->restoreQuote();
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
                 $this->logger->debug('Restore quote failed in create outer catch: ' . $ex->getMessage());
             }
             return $result->setData([

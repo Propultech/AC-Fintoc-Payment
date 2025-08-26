@@ -4,5 +4,8 @@
         <route id="fintoc" frontName="fintoc">
             <module name="Fintoc_Payment" />
         </route>
+        <route id="fintoc_refunds" frontName="fintoc_refunds">
+            <module name="Fintoc_Payment" />
+        </route>
     </router>
 </config>

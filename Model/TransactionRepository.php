@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Model;
 
+use Exception;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\Data\TransactionSearchResultsInterface;
 use Fintoc\Payment\Api\Data\TransactionSearchResultsInterfaceFactory;
@@ -56,11 +57,11 @@ class TransactionRepository implements TransactionRepositoryInterface
      * @param CollectionProcessorInterface $collectionProcessor
      */
     public function __construct(
-        TransactionResource $resource,
-        TransactionFactory $transactionFactory,
-        CollectionFactory $collectionFactory,
+        TransactionResource                      $resource,
+        TransactionFactory                       $transactionFactory,
+        CollectionFactory                        $collectionFactory,
         TransactionSearchResultsInterfaceFactory $searchResultsFactory,
-        CollectionProcessorInterface $collectionProcessor
+        CollectionProcessorInterface             $collectionProcessor
     ) {
         $this->resource = $resource;
         $this->transactionFactory = $transactionFactory;
@@ -76,24 +77,11 @@ class TransactionRepository implements TransactionRepositoryInterface
     {
         try {
             $this->resource->save($transaction);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new CouldNotSaveException(__(
                 'Could not save the transaction: %1',
                 $exception->getMessage()
             ));
-        }
-        return $transaction;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getById(int $entityId): TransactionInterface
-    {
-        $transaction = $this->transactionFactory->create();
-        $this->resource->load($transaction, $entityId);
-        if (!$transaction->getId()) {
-            throw new NoSuchEntityException(__('Transaction with id "%1" does not exist.', $entityId));
         }
         return $transaction;
     }
@@ -164,11 +152,19 @@ class TransactionRepository implements TransactionRepositoryInterface
     /**
      * @inheritDoc
      */
+    public function deleteById(int $entityId): bool
+    {
+        return $this->delete($this->getById($entityId));
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function delete(TransactionInterface $transaction): bool
     {
         try {
             $this->resource->delete($transaction);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             throw new CouldNotDeleteException(__(
                 'Could not delete the transaction: %1',
                 $exception->getMessage()
@@ -180,8 +176,13 @@ class TransactionRepository implements TransactionRepositoryInterface
     /**
      * @inheritDoc
      */
-    public function deleteById(int $entityId): bool
+    public function getById(int $entityId): TransactionInterface
     {
-        return $this->delete($this->getById($entityId));
+        $transaction = $this->transactionFactory->create();
+        $this->resource->load($transaction, $entityId);
+        if (!$transaction->getId()) {
+            throw new NoSuchEntityException(__('Transaction with id "%1" does not exist.', $entityId));
+        }
+        return $transaction;
     }
 }

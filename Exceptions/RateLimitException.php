@@ -2,6 +2,8 @@
 
 namespace Fintoc\Payment\Exceptions;
 
+use Throwable;
+
 /**
  * Exception thrown when the API rate limit is exceeded.
  */
@@ -30,7 +32,7 @@ class RateLimitException extends ApiException
      * @param int|null $rateReset The rate limit reset time.
      * @param string $message The exception message.
      * @param int $code The exception code.
-     * @param \Throwable|null $previous The previous exception.
+     * @param Throwable|null $previous The previous exception.
      * @param array $errorData Additional error data.
      * @param string|null $requestId The request ID.
      * @param string|null $method The HTTP method.
@@ -38,17 +40,17 @@ class RateLimitException extends ApiException
      * @param int|null $statusCode The HTTP status code.
      */
     public function __construct(
-        int $rateLimit = null,
-        int $rateRemaining = null,
-        int $rateReset = null,
-        string $message = "API rate limit exceeded",
-        int $code = 429,
-        \Throwable $previous = null,
-        array $errorData = [],
-        string $requestId = null,
-        string $method = null,
-        string $path = null,
-        int $statusCode = 429
+        int        $rateLimit = null,
+        int        $rateRemaining = null,
+        int        $rateReset = null,
+        string     $message = "API rate limit exceeded",
+        int        $code = 429,
+        Throwable $previous = null,
+        array      $errorData = [],
+        string     $requestId = null,
+        string     $method = null,
+        string     $path = null,
+        int        $statusCode = 429
     ) {
         parent::__construct($message, $code, $previous, $errorData, $requestId, $method, $path, $statusCode);
         $this->rateLimit = $rateLimit;

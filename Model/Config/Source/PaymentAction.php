@@ -15,8 +15,8 @@ class PaymentAction implements ArrayInterface
     /**
      * Possible payment actions
      */
-    const ACTION_AUTHORIZE = 'authorize';
-    const ACTION_AUTHORIZE_CAPTURE = 'authorize_capture';
+    public const ACTION_AUTHORIZE = 'authorize';
+    public const ACTION_AUTHORIZE_CAPTURE = 'authorize_capture';
 
     /**
      * Get available payment actions

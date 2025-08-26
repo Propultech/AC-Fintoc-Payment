@@ -2,6 +2,8 @@
 
 namespace Fintoc\Payment\Exceptions;
 
+use Throwable;
+
 /**
  * Exception thrown when an API error occurs.
  */
@@ -32,7 +34,7 @@ class ApiException extends FintocException
      *
      * @param string $message The exception message.
      * @param int $code The exception code.
-     * @param \Throwable|null $previous The previous exception.
+     * @param Throwable|null $previous The previous exception.
      * @param array $errorData Additional error data.
      * @param string|null $requestId The request ID.
      * @param string|null $method The HTTP method.
@@ -40,14 +42,14 @@ class ApiException extends FintocException
      * @param int|null $statusCode The HTTP status code.
      */
     public function __construct(
-        string $message = "An error occurred with the Fintoc API",
-        int $code = 0,
-        \Throwable $previous = null,
-        array $errorData = [],
-        string $requestId = null,
-        string $method = null,
-        string $path = null,
-        int $statusCode = null
+        string     $message = "An error occurred with the Fintoc API",
+        int        $code = 0,
+        Throwable $previous = null,
+        array      $errorData = [],
+        string     $requestId = null,
+        string     $method = null,
+        string     $path = null,
+        int        $statusCode = null
     ) {
         parent::__construct($message, $code, $previous, $errorData);
         $this->requestId = $requestId;

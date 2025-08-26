@@ -5,6 +5,7 @@
 
 namespace Fintoc\Payment\Controller\Webhook;
 
+use Exception;
 use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\LoggerServiceInterface;
@@ -26,6 +27,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Service\InvoiceService;
 use Psr\Log\LoggerInterface;
@@ -124,8 +126,7 @@ class Index extends Action implements CsrfAwareActionInterface
         TransactionRepositoryInterface $transactionRepository,
         Json                           $json,
         CartRepositoryInterface        $cartRepository
-    )
-    {
+    ) {
         parent::__construct($context);
         $this->resultJsonFactory = $resultJsonFactory;
         $this->orderFactory = $orderFactory;
@@ -188,7 +189,7 @@ class Index extends Action implements CsrfAwareActionInterface
             $this->routeEvent($eventType, $object);
 
             return $result->setData(['success' => true]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Webhook processing error: ' . $e->getMessage(), ['exception' => $e]);
             return $result->setStatusHeader(500)->setData(['error' => $e->getMessage()]);
         }
@@ -212,6 +213,21 @@ class Index extends Action implements CsrfAwareActionInterface
             ]);
             WebhookSignature::verifyHeader($payload, $signature, $webhookSecret);
         }
+    }
+
+    /**
+     * @return string
+     * @throws LocalizedException
+     */
+    private function getWebhookSecret()
+    {
+        $webhookSecret = $this->configService->getWebhookSecret();
+
+        if (!$webhookSecret) {
+            throw new LocalizedException(__('Fintoc Webhook key is not configured'));
+        }
+
+        return $webhookSecret;
     }
 
     /**
@@ -304,33 +320,6 @@ class Index extends Action implements CsrfAwareActionInterface
     }
 
     /**
-     * Normalize payment intent keys to camelCase while accepting snake_case from webhook.
-     *
-     * @param array $pi
-     * @return array
-     */
-    private function normalizePaymentIntent(array $pi): array
-    {
-        // Only set camelCase if missing, keeping existing values intact
-        if (!isset($pi['paymentType']) && isset($pi['payment_type'])) {
-            $pi['paymentType'] = $pi['payment_type'];
-        }
-        if (!isset($pi['referenceId']) && isset($pi['reference_id'])) {
-            $pi['referenceId'] = $pi['reference_id'];
-        }
-        if (!isset($pi['transactionDate']) && isset($pi['transaction_date'])) {
-            $pi['transactionDate'] = $pi['transaction_date'];
-        }
-        if (!isset($pi['senderAccount']) && isset($pi['sender_account'])) {
-            $pi['senderAccount'] = $pi['sender_account'];
-        }
-        if (!isset($pi['errorReason']) && isset($pi['error_reason'])) {
-            $pi['errorReason'] = $pi['error_reason'];
-        }
-        return $pi;
-    }
-
-    /**
      * Process a successful payment intent
      *
      * @param array $paymentIntent
@@ -392,7 +381,7 @@ class Index extends Action implements CsrfAwareActionInterface
                     ]
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating transaction: ' . $e->getMessage(), ['exception' => $e]);
         }
 
@@ -417,7 +406,8 @@ class Index extends Action implements CsrfAwareActionInterface
         $order/*->setState(Order::STATE_PROCESSING)
             ->setStatus(Order::STATE_PROCESSING)*/
         ->addCommentToStatusHistory(
-            __('Payment successfully processed by Fintoc. Payment ID: %1, Amount: %2 %3, Reference: %4',
+            __(
+                'Payment successfully processed by Fintoc. Payment ID: %1, Amount: %2 %3, Reference: %4',
                 $paymentIntent['id'],
                 $paymentIntent['amount'] / 100, // Convert from cents to base currency
                 $paymentIntent['currency'],
@@ -428,7 +418,7 @@ class Index extends Action implements CsrfAwareActionInterface
         // Create invoice
         if ($order->canInvoice()) {
             $invoice = $this->invoiceService->prepareInvoice($order);
-            $invoice->setRequestedCaptureCase(\Magento\Sales\Model\Order\Invoice::CAPTURE_ONLINE);
+            $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
             $invoice->register();
             $invoice->save();
 
@@ -457,6 +447,54 @@ class Index extends Action implements CsrfAwareActionInterface
                 'currency' => $paymentIntent['currency']
             ]
         );
+    }
+
+    /**
+     * Normalize payment intent keys to camelCase while accepting snake_case from webhook.
+     *
+     * @param array $pi
+     * @return array
+     */
+    private function normalizePaymentIntent(array $pi): array
+    {
+        // Only set camelCase if missing, keeping existing values intact
+        if (!isset($pi['paymentType']) && isset($pi['payment_type'])) {
+            $pi['paymentType'] = $pi['payment_type'];
+        }
+        if (!isset($pi['referenceId']) && isset($pi['reference_id'])) {
+            $pi['referenceId'] = $pi['reference_id'];
+        }
+        if (!isset($pi['transactionDate']) && isset($pi['transaction_date'])) {
+            $pi['transactionDate'] = $pi['transaction_date'];
+        }
+        if (!isset($pi['senderAccount']) && isset($pi['sender_account'])) {
+            $pi['senderAccount'] = $pi['sender_account'];
+        }
+        if (!isset($pi['errorReason']) && isset($pi['error_reason'])) {
+            $pi['errorReason'] = $pi['error_reason'];
+        }
+        return $pi;
+    }
+
+    /**
+     * Extract Magento order increment ID from a webhook object metadata.
+     *
+     * @param array $object
+     * @return string|null
+     */
+    private function extractOrderIncrementId(array $object): ?string
+    {
+        $this->logger->debug('extractOrderIncrementId from webhook object metadata', $object);
+        $metadata = $object['metadata'] ?? null;
+        if (is_array($metadata)) {
+            $keys = ['ecommerceOrderId', 'ecommerce_order_id', 'order', 'order_id', 'order_increment_id'];
+            foreach ($keys as $k) {
+                if (!empty($metadata[$k]) && is_string($metadata[$k])) {
+                    return $metadata[$k];
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -524,7 +562,7 @@ class Index extends Action implements CsrfAwareActionInterface
                     ]
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating transaction: ' . $e->getMessage(), ['exception' => $e]);
         }
 
@@ -547,7 +585,8 @@ class Index extends Action implements CsrfAwareActionInterface
         $errorSuffix = $reason ? ': ' . $reason : '';
         $order->cancel();
         $order->addCommentToStatusHistory(
-            __('Payment failed at Fintoc. Payment ID: %1, Amount: %2 %3, Status: %4%5',
+            __(
+                'Payment failed at Fintoc. Payment ID: %1, Amount: %2 %3, Status: %4%5',
                 $paymentIntent['id'],
                 $paymentIntent['amount'] / 100, // Convert from cents to base currency
                 $paymentIntent['currency'],
@@ -594,45 +633,9 @@ class Index extends Action implements CsrfAwareActionInterface
                     ]);
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->debug('Restore quote failed in webhook: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * @return string
-     * @throws LocalizedException
-     */
-    private function getWebhookSecret()
-    {
-        $webhookSecret = $this->configService->getWebhookSecret();
-
-        if (!$webhookSecret) {
-            throw new LocalizedException(__('Fintoc Webhook key is not configured'));
-        }
-
-        return $webhookSecret;
-    }
-
-    /**
-     * Extract Magento order increment ID from a webhook object metadata.
-     *
-     * @param array $object
-     * @return string|null
-     */
-    private function extractOrderIncrementId(array $object): ?string
-    {
-        $this->logger->debug('extractOrderIncrementId from webhook object metadata', $object);
-        $metadata = $object['metadata'] ?? null;
-        if (is_array($metadata)) {
-            $keys = ['ecommerceOrderId', 'ecommerce_order_id', 'order', 'order_id', 'order_increment_id'];
-            foreach ($keys as $k) {
-                if (!empty($metadata[$k]) && is_string($metadata[$k])) {
-                    return $metadata[$k];
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -679,7 +682,7 @@ class Index extends Action implements CsrfAwareActionInterface
                     ['created_by' => 'webhook']
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating pending transaction: ' . $e->getMessage(), ['exception' => $e]);
         }
 
@@ -707,7 +710,8 @@ class Index extends Action implements CsrfAwareActionInterface
 
         // Add order history comment (trace)
         $order->addCommentToStatusHistory(
-            __('Payment pending at Fintoc. Payment ID: %1%2',
+            __(
+                'Payment pending at Fintoc. Payment ID: %1%2',
                 $paymentIntent['id'] ?? 'N/A',
                 isset($paymentIntent['amount'], $paymentIntent['currency'])
                     ? __(', Amount: %1 %2', ((float)$paymentIntent['amount']) / 100, $paymentIntent['currency'])
@@ -739,7 +743,8 @@ class Index extends Action implements CsrfAwareActionInterface
         }
 
         $order->addCommentToStatusHistory(
-            __('Fintoc checkout session finished. Session ID: %1, Status: %2',
+            __(
+                'Fintoc checkout session finished. Session ID: %1, Status: %2',
                 $session['id'] ?? 'N/A',
                 $session['status'] ?? 'finished'
             )
@@ -797,7 +802,7 @@ class Index extends Action implements CsrfAwareActionInterface
                     ]
                 );
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error updating transaction for session expired: ' . $e->getMessage(), ['exception' => $e]);
         }
 

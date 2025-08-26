@@ -10,11 +10,14 @@ use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\TransactionRepositoryInterface;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
-use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Backend\Model\UrlInterface as BackendUrl;
+use Magento\Framework\Serialize\Serializer\Json;
+use Fintoc\Payment\Block\Traits\DateTimeFormatterTrait;
+use Throwable;
 
 class View extends Template
 {
+    use DateTimeFormatterTrait;
     /** @var TransactionRepositoryInterface */
     private $transactionRepository;
 
@@ -25,10 +28,10 @@ class View extends Template
     private $backendUrl;
 
     public function __construct(
-        Context $context,
+        Context                        $context,
         TransactionRepositoryInterface $transactionRepository,
-        Json $json,
-        array $data = []
+        Json                           $json,
+        array                          $data = []
     ) {
         parent::__construct($context, $data);
         $this->transactionRepository = $transactionRepository;
@@ -47,23 +50,7 @@ class View extends Template
         }
         try {
             return $this->transactionRepository->getById($id);
-        } catch (\Throwable $e) {
-            return null;
-        }
-    }
-
-    /**
-     * Whether a value looks like JSON and can be pretty printed
-     */
-    private function tryDecode($value): ?array
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        try {
-            $decoded = $this->json->unserialize((string)$value);
-            return is_array($decoded) ? $decoded : null;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return null;
         }
     }
@@ -80,6 +67,26 @@ class View extends Template
         return (string)$value;
     }
 
+    /**
+     * Whether a value looks like JSON and can be pretty printed
+     */
+    private function tryDecode($value): ?array
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        try {
+            $decoded = $this->json->unserialize((string)$value);
+            return is_array($decoded) ? $decoded : null;
+        } catch (Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param string $type
+     * @return string
+     */
     public function getTypeLabel(string $type): string
     {
         $map = [
@@ -92,6 +99,10 @@ class View extends Template
         return $map[$type] ?? $type;
     }
 
+    /**
+     * @param string $status
+     * @return string
+     */
     public function getStatusLabel(string $status): string
     {
         $map = [
@@ -104,6 +115,11 @@ class View extends Template
         return $map[$status] ?? $status;
     }
 
+    /**
+     * @param float|null $amount
+     * @param string|null $currency
+     * @return string
+     */
     public function formatAmount(?float $amount, ?string $currency): string
     {
         if ($amount === null) {
@@ -113,6 +129,10 @@ class View extends Template
         return $currency ? sprintf('%s %s', $currency, $formatted) : $formatted;
     }
 
+    /**
+     * @param string|null $orderIncrementId
+     * @return string|null
+     */
     public function getOrderViewUrl(?string $orderIncrementId): ?string
     {
         if (!$orderIncrementId) {

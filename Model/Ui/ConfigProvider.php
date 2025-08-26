@@ -5,9 +5,9 @@
 
 namespace Fintoc\Payment\Model\Ui;
 
-use Magento\Checkout\Model\ConfigProviderInterface;
 use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Model\Payment;
+use Magento\Checkout\Model\ConfigProviderInterface;
 
 /**
  * Configuration provider for Fintoc payment method

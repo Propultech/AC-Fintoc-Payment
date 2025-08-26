@@ -6,8 +6,8 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Model\Source;
 
-use Magento\Framework\Data\OptionSourceInterface;
 use Fintoc\Payment\Api\Data\TransactionInterface;
+use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Transaction type source model

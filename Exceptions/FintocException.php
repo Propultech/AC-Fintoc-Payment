@@ -2,10 +2,13 @@
 
 namespace Fintoc\Payment\Exceptions;
 
+use Exception;
+use Throwable;
+
 /**
  * Base exception class for all Fintoc exceptions.
  */
-class FintocException extends \Exception
+class FintocException extends Exception
 {
     /**
      * @var array Additional error data.
@@ -17,14 +20,14 @@ class FintocException extends \Exception
      *
      * @param string $message The exception message.
      * @param int $code The exception code.
-     * @param \Throwable|null $previous The previous exception.
+     * @param Throwable|null $previous The previous exception.
      * @param array $errorData Additional error data.
      */
     public function __construct(
-        string $message = "An error occurred with the Fintoc API",
-        int $code = 0,
-        \Throwable $previous = null,
-        array $errorData = []
+        string     $message = "An error occurred with the Fintoc API",
+        int        $code = 0,
+        Throwable $previous = null,
+        array      $errorData = []
     ) {
         parent::__construct($message, $code, $previous);
         $this->errorData = $errorData;

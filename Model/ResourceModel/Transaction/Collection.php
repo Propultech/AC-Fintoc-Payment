@@ -6,8 +6,8 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Model\ResourceModel\Transaction;
 
-use Fintoc\Payment\Model\Transaction;
 use Fintoc\Payment\Model\ResourceModel\Transaction as TransactionResource;
+use Fintoc\Payment\Model\Transaction;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
@@ -19,16 +19,6 @@ class Collection extends AbstractCollection
      * @var string
      */
     protected $_idFieldName = 'entity_id';
-
-    /**
-     * Initialize collection
-     *
-     * @return void
-     */
-    protected function _construct()
-    {
-        $this->_init(Transaction::class, TransactionResource::class);
-    }
 
     /**
      * Add order filter
@@ -101,5 +91,15 @@ class Collection extends AbstractCollection
     {
         $this->addFieldToFilter('created_at', ['from' => $fromDate, 'to' => $toDate]);
         return $this;
+    }
+
+    /**
+     * Initialize collection
+     *
+     * @return void
+     */
+    protected function _construct()
+    {
+        $this->_init(Transaction::class, TransactionResource::class);
     }
 }

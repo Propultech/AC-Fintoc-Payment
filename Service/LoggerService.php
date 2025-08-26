@@ -11,6 +11,7 @@ use Fintoc\Payment\Api\LoggerServiceInterface;
 use Fintoc\Payment\Logger\Logger;
 use Monolog\Logger as MonologLogger;
 use Psr\Log\LoggerInterface;
+use Stringable;
 
 /**
  * Service for logging messages
@@ -38,9 +39,9 @@ class LoggerService implements LoggerServiceInterface, LoggerInterface
      * @param DataFilterService $dataFilter
      */
     public function __construct(
-        Logger $logger,
+        Logger                        $logger,
         ConfigurationServiceInterface $configService,
-        DataFilterService $dataFilter
+        DataFilterService             $dataFilter
     ) {
         $this->logger = $logger;
         $this->configService = $configService;
@@ -50,25 +51,35 @@ class LoggerService implements LoggerServiceInterface, LoggerInterface
     /**
      * @inheritDoc
      */
-    public function debug($message, array $context = [])
-    {
-        $this->log(MonologLogger::DEBUG, $message, $context);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function info($message, array $context = [])
-    {
-        $this->log(MonologLogger::INFO, $message, $context);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function notice($message, array $context = [])
     {
         $this->log(MonologLogger::NOTICE, $message, $context);
+    }
+
+    /**
+     * Log a message with the given level
+     *
+     * @param int $level The log level
+     * @param string|Stringable $message The message to log
+     * @param array $context Additional context data
+     * @return void
+     */
+    public function log($level, string|Stringable $message, array $context = []): void
+    {
+        // Skip logging if it's disabled or the level is below the configured level
+        if (!$this->configService->isLoggingEnabled() || $level < $this->configService->getDebugLevel()) {
+            return;
+        }
+
+        // Filter sensitive data
+        $message = $this->dataFilter->filterSensitiveData($message);
+        $context = $this->dataFilter->filterSensitiveData($context);
+
+        // Add timestamp to context
+        $context['timestamp'] = date('Y-m-d H:i:s');
+
+        // Log the message
+        $this->logger->addRecord($level, $message, $context);
     }
 
     /**
@@ -123,6 +134,14 @@ class LoggerService implements LoggerServiceInterface, LoggerInterface
     /**
      * @inheritDoc
      */
+    public function info($message, array $context = [])
+    {
+        $this->log(MonologLogger::INFO, $message, $context);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function logApiRequest(string $method, string $endpoint, array $params = [], array $context = [])
     {
         $context = array_merge($context, [
@@ -131,6 +150,14 @@ class LoggerService implements LoggerServiceInterface, LoggerInterface
             'params' => $params
         ]);
         $this->debug('API Request: ' . $method . ' ' . $endpoint, $context);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function debug($message, array $context = [])
+    {
+        $this->log(MonologLogger::DEBUG, $message, $context);
     }
 
     /**
@@ -150,45 +177,6 @@ class LoggerService implements LoggerServiceInterface, LoggerInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    public function logTransaction(string $transactionId, string $type, array $data = [], array $context = [])
-    {
-        $context = array_merge($context, [
-            'transaction_id' => $transactionId,
-            'type' => $type,
-            'data' => $data
-        ]);
-        $this->info('Transaction: ' . $type . ' ' . $transactionId, $context);
-    }
-
-    /**
-     * Log a message with the given level
-     *
-     * @param int $level The log level
-     * @param string|\Stringable $message The message to log
-     * @param array $context Additional context data
-     * @return void
-     */
-    public function log($level, string|\Stringable $message, array $context = []): void
-    {
-        // Skip logging if it's disabled or the level is below the configured level
-        if (!$this->configService->isLoggingEnabled() || $level < $this->configService->getDebugLevel()) {
-            return;
-        }
-
-        // Filter sensitive data
-        $message = $this->dataFilter->filterSensitiveData($message);
-        $context = $this->dataFilter->filterSensitiveData($context);
-
-        // Add timestamp to context
-        $context['timestamp'] = date('Y-m-d H:i:s');
-
-        // Log the message
-        $this->logger->addRecord($level, $message, $context);
-    }
-
-    /**
      * Get the log level for the given status code
      *
      * @param int $statusCode The HTTP status code
@@ -205,5 +193,18 @@ class LoggerService implements LoggerServiceInterface, LoggerInterface
         }
 
         return MonologLogger::INFO;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function logTransaction(string $transactionId, string $type, array $data = [], array $context = [])
+    {
+        $context = array_merge($context, [
+            'transaction_id' => $transactionId,
+            'type' => $type,
+            'data' => $data
+        ]);
+        $this->info('Transaction: ' . $type . ' ' . $transactionId, $context);
     }
 }

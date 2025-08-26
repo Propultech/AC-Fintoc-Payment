@@ -6,8 +6,10 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Service;
 
+use Exception;
 use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -46,19 +48,19 @@ class ConfigurationService implements ConfigurationServiceInterface
     private $storeManager;
 
     /**
-     * @var \Magento\Framework\Encryption\EncryptorInterface
+     * @var EncryptorInterface
      */
     private $encryptor;
 
     /**
      * @param ScopeConfigInterface $scopeConfig
      * @param StoreManagerInterface $storeManager
-     * @param \Magento\Framework\Encryption\EncryptorInterface $encryptor
+     * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        ScopeConfigInterface $scopeConfig,
-        StoreManagerInterface $storeManager,
-        \Magento\Framework\Encryption\EncryptorInterface $encryptor
+        ScopeConfigInterface                             $scopeConfig,
+        StoreManagerInterface                            $storeManager,
+        EncryptorInterface $encryptor
     ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
@@ -71,6 +73,22 @@ class ConfigurationService implements ConfigurationServiceInterface
     public function isActive(?string $scopeCode = null): bool
     {
         return (bool)$this->getConfig(self::XML_PATH_ACTIVE, ScopeInterface::SCOPE_STORE, $scopeCode);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getConfig(string $path, string $scope = ScopeInterface::SCOPE_STORE, $scopeId = null)
+    {
+        if ($scopeId === null) {
+            try {
+                $scopeId = $this->storeManager->getStore()->getId();
+            } catch (Exception $e) {
+                $scopeId = null;
+            }
+        }
+
+        return $this->scopeConfig->getValue($path, $scope, $scopeId);
     }
 
     /**
@@ -193,21 +211,5 @@ class ConfigurationService implements ConfigurationServiceInterface
     public function getSortOrder(?string $scopeCode = null): int
     {
         return (int)$this->getConfig(self::XML_PATH_SORT_ORDER, ScopeInterface::SCOPE_STORE, $scopeCode);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getConfig(string $path, string $scope = ScopeInterface::SCOPE_STORE, $scopeId = null)
-    {
-        if ($scopeId === null) {
-            try {
-                $scopeId = $this->storeManager->getStore()->getId();
-            } catch (\Exception $e) {
-                $scopeId = null;
-            }
-        }
-
-        return $this->scopeConfig->getValue($path, $scope, $scopeId);
     }
 }

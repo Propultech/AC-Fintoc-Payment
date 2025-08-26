@@ -6,14 +6,17 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Block\Checkout;
 
+use Exception;
 use Fintoc\Payment\Model\Payment as FintocPaymentMethod;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\View\Element\Template;
 use Magento\Sales\Model\Order;
+use Fintoc\Payment\Block\Traits\DateTimeFormatterTrait;
 
 class Success extends Template
 {
+    use DateTimeFormatterTrait;
     /**
      * @var CheckoutSession
      */
@@ -26,42 +29,14 @@ class Success extends Template
 
     public function __construct(
         Template\Context $context,
-        CheckoutSession $checkoutSession,
-        Json $json,
-        array $data = []
-    ) {
+        CheckoutSession  $checkoutSession,
+        Json             $json,
+        array            $data = []
+    )
+    {
         parent::__construct($context, $data);
         $this->checkoutSession = $checkoutSession;
         $this->json = $json;
-    }
-
-    /**
-     * Whether the block should be displayed
-     */
-    public function canShow(): bool
-    {
-        $order = $this->getOrder();
-        if (!$order || !$order->getId()) {
-            return false;
-        }
-        $payment = $order->getPayment();
-        if (!$payment) {
-            return false;
-        }
-        return $payment->getMethod() === FintocPaymentMethod::CODE;
-    }
-
-    /**
-     * Get the last real order from session
-     */
-    public function getOrder(): ?Order
-    {
-        try {
-            $order = $this->checkoutSession->getLastRealOrder();
-            return $order && $order->getId() ? $order : null;
-        } catch (\Exception $e) {
-            return null;
-        }
     }
 
     /**
@@ -69,9 +44,6 @@ class Success extends Template
      */
     public function getRows(): array
     {
-        if (!$this->canShow()) {
-            return [];
-        }
         $order = $this->getOrder();
         $payment = $order->getPayment();
         $ai = (array)$payment->getAdditionalInformation();
@@ -105,13 +77,13 @@ class Success extends Template
             $rows[(string)__('Reference ID')] = (string)$ai['fintoc_reference_id'];
         }
         if (!empty($ai['fintoc_transaction_date'])) {
-            $rows[(string)__('Transaction Date')] = (string)$ai['fintoc_transaction_date'];
+            $rows[(string)__('Transaction Date')] = $this->formatDateTimeExact($ai['fintoc_transaction_date']);
         }
         if (!empty($ai['fintoc_transaction_completed_at'])) {
-            $rows[(string)__('Completed At')] = (string)$ai['fintoc_transaction_completed_at'];
+            $rows[(string)__('Completed At')] = $this->formatDateTimeExact($ai['fintoc_transaction_completed_at']);
         }
         if (!empty($ai['fintoc_transaction_canceled_at'])) {
-            $rows[(string)__('Canceled At')] = (string)$ai['fintoc_transaction_canceled_at'];
+            $rows[(string)__('Canceled At')] = $this->formatDateTimeExact($ai['fintoc_transaction_canceled_at']);
         }
         if (!empty($ai['fintoc_cancel_reason'])) {
             $rows[(string)__('Cancel Reason')] = (string)$ai['fintoc_cancel_reason'];
@@ -142,24 +114,71 @@ class Success extends Template
                         $rows[(string)__('Sender Account')] = implode(' | ', $parts);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // ignore malformed json
+                unset($e);
             }
         }
 
         return $rows;
     }
 
+    /**
+     * Whether the block should be displayed
+     */
+    public function canShow(): bool
+    {
+        $order = $this->getOrder();
+        if (!$order || !$order->getId()) {
+            return false;
+        }
+        $payment = $order->getPayment();
+        if (!$payment) {
+            return false;
+        }
+        return $payment->getMethod() === FintocPaymentMethod::CODE;
+    }
+
+    /**
+     * Get the last real order from session
+     */
+    public function getOrder(): ?Order
+    {
+        try {
+            $order = $this->checkoutSession->getLastRealOrder();
+            return $order && $order->getId() ? $order : null;
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param Order $order
+     * @param array $ai
+     * @return string|null
+     */
     private function formatAmountRow(Order $order, array $ai): ?string
     {
         if (isset($ai['fintoc_amount'])) {
             $amount = (float)$ai['fintoc_amount'];
-            return $order->formatPrice($amount) . (isset($ai['fintoc_currency']) ? ' ' . $ai['fintoc_currency'] : '');
+            return $order->formatPrice($amount);
         }
         if (isset($ai['fintoc_payment_amount'])) {
             $amount = ((float)$ai['fintoc_payment_amount']) / 100; // cents to major units
-            return $order->formatPrice($amount) . (isset($ai['fintoc_payment_currency']) ? ' ' . $ai['fintoc_payment_currency'] : '');
+            return $order->formatPrice($amount);
         }
         return null;
+    }
+
+    /**
+     * @return string
+     */
+    public function toHtml()
+    {
+        if ($this->canShow()) {
+            return parent::toHtml();
+        } else {
+            return '';
+        }
     }
 }

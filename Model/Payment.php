@@ -30,25 +30,62 @@ class Payment extends AbstractMethod
      * Payment method code
      */
     public const CODE = 'fintoc_payment';
-
+    /**
+     * @var string
+     */
     protected $_code = self::CODE;
+    /**
+     * @var bool
+     */
     protected $_isGateway = true;
+    /**
+     * @var bool
+     */
     protected $_canAuthorize = true;
+    /**
+     * @var bool
+     */
     protected $_canCapture = true;
+    /**
+     * @var bool
+     */
     protected $_canRefund = true;
+    /**
+     * @var bool
+     */
     protected $_canRefundInvoicePartial = true;
+    /**
+     * @var bool
+     */
     protected $_canVoid = true;
+    /**
+     * @var bool
+     */
     protected $_canUseInternal = false;
+    /**
+     * @var bool
+     */
     protected $_canUseCheckout = true;
+    /**
+     * @var bool
+     */
     protected $_isInitializeNeeded = true;
+    /**
+     * @var string
+     */
     protected $_infoBlockType = Fintoc::class;
+    /**
+     * @var string[]
+     */
     protected $supportedCurrencyCodes = ['CLP'];
 
     /**
      * @var ConfigurationServiceInterface
      */
     private ConfigurationServiceInterface $configService;
-
+    /**
+     * @var StoreManagerInterface
+     */
     private StoreManagerInterface $storeManager;
 
     /**
@@ -78,8 +115,7 @@ class Payment extends AbstractMethod
         AbstractResource              $resource = null,
         AbstractDb                    $resourceCollection = null,
         array                         $data = []
-    )
-    {
+    ) {
         parent::__construct(
             $context,
             $registry,
@@ -130,17 +166,6 @@ class Payment extends AbstractMethod
     }
 
     /**
-     * Check if payment method is active
-     *
-     * @param int|null $storeId
-     * @return bool
-     */
-    public function isActive($storeId = null)
-    {
-        return $this->configService->isActive($storeId);
-    }
-
-    /**
      * Check whether payment method is available
      *
      * @param CartInterface|null $quote
@@ -173,5 +198,16 @@ class Payment extends AbstractMethod
         }
 
         return true;
+    }
+
+    /**
+     * Check if payment method is active
+     *
+     * @param int|null $storeId
+     * @return bool
+     */
+    public function isActive($storeId = null)
+    {
+        return $this->configService->isActive($storeId);
     }
 }

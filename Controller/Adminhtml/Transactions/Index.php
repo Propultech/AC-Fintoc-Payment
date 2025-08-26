@@ -8,6 +8,7 @@ namespace Fintoc\Payment\Controller\Adminhtml\Transactions;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\View\Result\Page;
 use Magento\Framework\View\Result\PageFactory;
 
 /**
@@ -18,7 +19,7 @@ class Index extends Action
     /**
      * Authorization level
      */
-    const ADMIN_RESOURCE = 'Fintoc_Payment::transactions';
+    public const ADMIN_RESOURCE = 'Fintoc_Payment::transactions';
 
     /**
      * @var PageFactory
@@ -30,7 +31,7 @@ class Index extends Action
      * @param PageFactory $resultPageFactory
      */
     public function __construct(
-        Context $context,
+        Context     $context,
         PageFactory $resultPageFactory
     ) {
         parent::__construct($context);
@@ -40,7 +41,7 @@ class Index extends Action
     /**
      * Transactions grid
      *
-     * @return \Magento\Framework\View\Result\Page
+     * @return Page
      */
     public function execute()
     {

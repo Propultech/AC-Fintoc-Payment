@@ -1,14 +1,17 @@
 <?php
 /** @var \Fintoc\Payment\Block\Adminhtml\Transactions\View $block */
-use Magento\Framework\Escaper;
+/** @var \Magento\Framework\Escaper $escaper */
 
 $transaction = $block->getTransaction();
-if (!$transaction) {
-    echo '<div class="message message-error"><div>' . $block->escapeHtml(__('Transaction not found.')) . '</div></div>';
-    return;
-}
+if (!$transaction): ?>
+    <div class="message message-error"><div><?= $escaper->escapeHtml(__('Transaction not found.')) ?></div></div>
+    <?php return; ?>
+<?php endif; ?>
+<?php
 
-$esc = function ($v) use ($block) { return $block->escapeHtml((string)$v); };
+$esc = function ($v) use ($escaper) {
+    return $escaper->escapeHtml((string)$v);
+};
 
 $fields = [
     'Entity ID' => $transaction->getEntityId(),
@@ -27,8 +30,8 @@ $fields = [
     'Updated By' => $transaction->getUpdatedBy(),
     'IP Address' => $transaction->getIpAddress(),
     'User Agent' => $transaction->getUserAgent(),
-    'Created At' => $transaction->getCreatedAt(),
-    'Updated At' => $transaction->getUpdatedAt(),
+    'Created At' => $block->formatDateTimeExact($transaction->getCreatedAt()),
+    'Updated At' => $block->formatDateTimeExact($transaction->getUpdatedAt()),
 ];
 ?>
 
@@ -38,17 +41,17 @@ $fields = [
 
 <div class="admin__page-section">
     <div class="admin__page-section-title">
-        <span class="title"><?php echo $block->escapeHtml(__('Fintoc Transaction Details')); ?></span>
+        <span class="title"><?= $escaper->escapeHtml(__('Fintoc Transaction Details')); ?></span>
     </div>
     <div class="admin__page-section-content">
         <div class="admin__control-table-wrapper">
             <table class="data-table admin__control-table">
                 <tbody>
                 <?php foreach ($fields as $label => $value): ?>
-                    <?php if ($value === null || $value === '') continue; ?>
+                    <?php if ($value === null || $value === '') { continue;} ?>
                     <tr>
-                        <th style="width: 240px;"><?php echo $block->escapeHtml((string)__($label)); ?></th>
-                        <td><?php echo $esc($value); ?></td>
+                        <th style="width: 240px;"><?= $escaper->escapeHtml((string)__($label)); ?></th>
+                        <td><?= $esc($value); ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -71,11 +74,11 @@ $jsonSections = [
     <?php if ($raw): ?>
         <div class="admin__page-section">
             <div class="admin__page-section-title">
-                <span class="title"><?php echo $block->escapeHtml((string)__($label)); ?></span>
+                <span class="title"><?= $escaper->escapeHtml((string)__($label)); ?></span>
             </div>
             <div class="admin__page-section-content">
                 <pre style="max-height: 500px; overflow:auto; background:#f8f8f8; border:1px solid #ddd; padding:12px;">
-<?php echo htmlspecialchars($block->prettyJson($raw), ENT_NOQUOTES, 'UTF-8'); ?>
+        <?= $escaper->escapeHtml($block->prettyJson($raw)); ?>
                 </pre>
             </div>
         </div>

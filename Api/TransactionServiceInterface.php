@@ -29,12 +29,12 @@ interface TransactionServiceInterface
      * @throws LocalizedException
      */
     public function createPreAuthorizationTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $additionalData = []
     ): TransactionInterface;
 
     /**
@@ -51,13 +51,13 @@ interface TransactionServiceInterface
      * @throws LocalizedException
      */
     public function createPostAuthorizationTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface;
 
     /**
@@ -75,14 +75,14 @@ interface TransactionServiceInterface
      * @throws LocalizedException
      */
     public function createCaptureTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface;
 
     /**
@@ -100,14 +100,14 @@ interface TransactionServiceInterface
      * @throws LocalizedException
      */
     public function createRefundTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface;
 
     /**
@@ -125,14 +125,14 @@ interface TransactionServiceInterface
      * @throws LocalizedException
      */
     public function createVoidTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface;
 
     /**
@@ -149,13 +149,13 @@ interface TransactionServiceInterface
      * @throws LocalizedException
      */
     public function createWebhookTransaction(
-        string $transactionId,
+        string          $transactionId,
         ?OrderInterface $order = null,
-        ?float $amount = null,
-        string $currency = 'USD',
-        array $webhookData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        ?float          $amount = null,
+        string          $currency = 'USD',
+        array           $webhookData = [],
+        string          $status = TransactionInterface::STATUS_SUCCESS,
+        array           $additionalData = []
     ): TransactionInterface;
 
     /**
@@ -169,8 +169,8 @@ interface TransactionServiceInterface
      */
     public function updateTransactionStatus(
         TransactionInterface $transaction,
-        string $status,
-        array $additionalData = []
+        string               $status,
+        array                $additionalData = []
     ): TransactionInterface;
 
     /**

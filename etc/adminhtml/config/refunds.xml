@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<include xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_include.xsd">
+    <group id="refunds" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+        <label>Refunds</label>
+        <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Enable Refunds</label>
+            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <config_path>payment/fintoc_payment/refunds_enabled</config_path>
+        </field>
+        <field id="allow_partial" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Allow Partial Refunds</label>
+            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <config_path>payment/fintoc_payment/refunds_allow_partial</config_path>
+        </field>
+        <field id="auto_creditmemo" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Auto-create Credit Memo on Refund Succeeded</label>
+            <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+            <config_path>payment/fintoc_payment/refunds_auto_creditmemo</config_path>
+        </field>
+        <field id="status_pending" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Order Status on Refund Pending</label>
+            <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+            <config_path>payment/fintoc_payment/refunds_status_pending</config_path>
+        </field>
+        <field id="status_succeeded" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Order Status on Refund Succeeded</label>
+            <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+            <config_path>payment/fintoc_payment/refunds_status_succeeded</config_path>
+        </field>
+        <field id="status_failed" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Order Status on Refund Failed</label>
+            <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+            <config_path>payment/fintoc_payment/refunds_status_failed</config_path>
+        </field>
+        <field id="status_canceled" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Order Status on Refund Canceled</label>
+            <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+            <config_path>payment/fintoc_payment/refunds_status_canceled</config_path>
+        </field>
+    </group>
+</include>

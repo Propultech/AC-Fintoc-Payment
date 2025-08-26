@@ -68,7 +68,7 @@ interface TransactionInterface
      * Set entity ID
      *
      * @param int $entityId
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setEntityId($entityId);
 
@@ -83,7 +83,7 @@ interface TransactionInterface
      * Set transaction ID
      *
      * @param string $transactionId
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setTransactionId($transactionId);
 
@@ -98,7 +98,7 @@ interface TransactionInterface
      * Set order ID
      *
      * @param string|null $orderId
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setOrderId($orderId);
 
@@ -113,7 +113,7 @@ interface TransactionInterface
      * Set order increment ID
      *
      * @param string|null $orderIncrementId
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setOrderIncrementId($orderIncrementId);
 
@@ -128,7 +128,7 @@ interface TransactionInterface
      * Set reference
      *
      * @param string|null $reference
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setReference($reference);
 
@@ -143,7 +143,7 @@ interface TransactionInterface
      * Set type
      *
      * @param string $type
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setType($type);
 
@@ -158,7 +158,7 @@ interface TransactionInterface
      * Set status
      *
      * @param string $status
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setStatus($status);
 
@@ -173,7 +173,7 @@ interface TransactionInterface
      * Set previous status
      *
      * @param string|null $previousStatus
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setPreviousStatus($previousStatus);
 
@@ -188,7 +188,7 @@ interface TransactionInterface
      * Set amount
      *
      * @param float $amount
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setAmount($amount);
 
@@ -203,7 +203,7 @@ interface TransactionInterface
      * Set currency
      *
      * @param string $currency
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setCurrency($currency);
 
@@ -218,7 +218,7 @@ interface TransactionInterface
      * Set request data
      *
      * @param string|null $requestData
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setRequestData($requestData);
 
@@ -233,7 +233,7 @@ interface TransactionInterface
      * Set response data
      *
      * @param string|null $responseData
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setResponseData($responseData);
 
@@ -248,7 +248,7 @@ interface TransactionInterface
      * Set webhook data
      *
      * @param string|null $webhookData
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setWebhookData($webhookData);
 
@@ -263,7 +263,7 @@ interface TransactionInterface
      * Set status history
      *
      * @param string|null $statusHistory
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setStatusHistory($statusHistory);
 
@@ -278,7 +278,7 @@ interface TransactionInterface
      * Set error code
      *
      * @param string|null $errorCode
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setErrorCode($errorCode);
 
@@ -293,7 +293,7 @@ interface TransactionInterface
      * Set error message
      *
      * @param string|null $errorMessage
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setErrorMessage($errorMessage);
 
@@ -308,7 +308,7 @@ interface TransactionInterface
      * Set retry attempts
      *
      * @param int $retryAttempts
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setRetryAttempts($retryAttempts);
 
@@ -323,7 +323,7 @@ interface TransactionInterface
      * Set created by
      *
      * @param string|null $createdBy
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setCreatedBy($createdBy);
 
@@ -338,7 +338,7 @@ interface TransactionInterface
      * Set updated by
      *
      * @param string|null $updatedBy
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setUpdatedBy($updatedBy);
 
@@ -353,7 +353,7 @@ interface TransactionInterface
      * Set IP address
      *
      * @param string|null $ipAddress
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setIpAddress($ipAddress);
 
@@ -368,7 +368,7 @@ interface TransactionInterface
      * Set user agent
      *
      * @param string|null $userAgent
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setUserAgent($userAgent);
 
@@ -383,7 +383,7 @@ interface TransactionInterface
      * Set created at
      *
      * @param string $createdAt
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setCreatedAt($createdAt);
 
@@ -398,7 +398,7 @@ interface TransactionInterface
      * Set updated at
      *
      * @param string $updatedAt
-     * @return \Fintoc\Payment\Api\Data\TransactionInterface
+     * @return TransactionInterface
      */
     public function setUpdatedAt($updatedAt);
 }

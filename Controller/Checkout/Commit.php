@@ -5,21 +5,21 @@
 
 namespace Fintoc\Payment\Controller\Checkout;
 
+use Exception;
+use Fintoc\Payment\Api\Data\TransactionInterface;
+use Fintoc\Payment\Api\TransactionRepositoryInterface;
+use Fintoc\Payment\Api\TransactionServiceInterface;
+use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
-use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Order;
-use Magento\Framework\Encryption\EncryptorInterface;
-use Fintoc\Payment\Api\TransactionServiceInterface;
-use Fintoc\Payment\Api\TransactionRepositoryInterface;
-use Fintoc\Payment\Api\Data\TransactionInterface;
-use Fintoc\Payment\Api\LoggerServiceInterface;
+use Magento\Sales\Model\OrderFactory;
 use Psr\Log\LoggerInterface;
-use Magento\Checkout\Model\Session as CheckoutSession;
 
 /**
  * Controller for handling Fintoc payment callbacks (success/cancel)
@@ -77,15 +77,15 @@ class Commit extends Action
      * @param LoggerInterface $logger
      */
     public function __construct(
-        Context $context,
-        RedirectFactory $resultRedirectFactory,
-        ManagerInterface $messageManager,
-        OrderFactory $orderFactory,
-        EncryptorInterface $encryptor,
-        TransactionServiceInterface $transactionService,
+        Context                        $context,
+        RedirectFactory                $resultRedirectFactory,
+        ManagerInterface               $messageManager,
+        OrderFactory                   $orderFactory,
+        EncryptorInterface             $encryptor,
+        TransactionServiceInterface    $transactionService,
         TransactionRepositoryInterface $transactionRepository,
-        LoggerInterface $logger,
-        CheckoutSession $checkoutSession
+        LoggerInterface                $logger,
+        CheckoutSession                $checkoutSession
     ) {
         parent::__construct($context);
         $this->resultRedirectFactory = $resultRedirectFactory;
@@ -121,7 +121,7 @@ class Commit extends Action
             // Decrypt the transaction ID
             try {
                 $transactionId = $this->encryptor->decrypt($encryptedTransactionId);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error decrypting transaction ID: ' . $e->getMessage(), ['exception' => $e]);
                 throw new LocalizedException(__('Invalid transaction ID'));
             }
@@ -129,7 +129,7 @@ class Commit extends Action
             // Get the transaction from the repository
             try {
                 $transaction = $this->transactionRepository->getByTransactionId($transactionId);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error retrieving transaction: ' . $e->getMessage(), ['exception' => $e]);
                 throw new LocalizedException(__('Transaction not found'));
             }
@@ -151,12 +151,12 @@ class Commit extends Action
                 throw new LocalizedException(__('Invalid action parameter'));
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->error('Error processing Fintoc callback: ' . $e->getMessage(), ['exception' => $e]);
             $this->messageManager->addErrorMessage($e->getMessage());
             try {
                 $this->checkoutSession->restoreQuote();
-            } catch (\Exception $e2) {
+            } catch (Exception $e2) {
                 $this->logger->debug('Restore quote failed: ' . $e2->getMessage());
             }
             return $resultRedirect->setPath('checkout/onepage/failure');
@@ -187,7 +187,8 @@ class Commit extends Action
 
         // Add comment to order history
         $order->addCommentToStatusHistory(
-            __('Fintoc payment successful. Transaction ID: %1, Amount: %2 %3',
+            __(
+                'Fintoc payment successful. Transaction ID: %1, Amount: %2 %3',
                 $transaction->getTransactionId(),
                 $transaction->getAmount(),
                 $transaction->getCurrency()
@@ -211,7 +212,7 @@ class Commit extends Action
                         }
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error('Error processing response data: ' . $e->getMessage());
             }
         }
@@ -261,7 +262,8 @@ class Commit extends Action
         if ($order->getState() !== Order::STATE_CANCELED) {
             $order->cancel();
             $order->addCommentToStatusHistory(
-                __('Fintoc payment canceled by customer. Transaction ID: %1, Amount: %2 %3',
+                __(
+                    'Fintoc payment canceled by customer. Transaction ID: %1, Amount: %2 %3',
                     $transaction->getTransactionId(),
                     $transaction->getAmount(),
                     $transaction->getCurrency()
@@ -293,7 +295,7 @@ class Commit extends Action
         // Restore quote to allow customer to retry checkout
         try {
             $this->checkoutSession->restoreQuote();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->logger->debug('Restore quote failed on cancel: ' . $e->getMessage());
         }
 

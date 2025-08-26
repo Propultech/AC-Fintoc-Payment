@@ -15,6 +15,20 @@ use Monolog\Logger;
 class DebugLevel implements ArrayInterface
 {
     /**
+     * Get options in "key-value" format
+     *
+     * @return array
+     */
+    public function toArray(): array
+    {
+        $options = [];
+        foreach ($this->toOptionArray() as $option) {
+            $options[$option['value']] = $option['label'];
+        }
+        return $options;
+    }
+
+    /**
      * Options getter
      *
      * @return array
@@ -31,19 +45,5 @@ class DebugLevel implements ArrayInterface
             ['value' => (string)Logger::ALERT, 'label' => __('Alert (550)')],
             ['value' => (string)Logger::EMERGENCY, 'label' => __('Emergency (600)')]
         ];
-    }
-
-    /**
-     * Get options in "key-value" format
-     *
-     * @return array
-     */
-    public function toArray(): array
-    {
-        $options = [];
-        foreach ($this->toOptionArray() as $option) {
-            $options[$option['value']] = $option['label'];
-        }
-        return $options;
     }
 }

@@ -6,12 +6,12 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Service;
 
+use Exception;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\Data\TransactionInterfaceFactory;
 use Fintoc\Payment\Api\LoggerServiceInterface;
 use Fintoc\Payment\Api\TransactionRepositoryInterface;
 use Fintoc\Payment\Api\TransactionServiceInterface;
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\Data\OrderInterface;
 
@@ -48,9 +48,9 @@ class TransactionService implements TransactionServiceInterface
      */
     public function __construct(
         TransactionRepositoryInterface $transactionRepository,
-        TransactionInterfaceFactory $transactionFactory,
-        LoggerServiceInterface $logger,
-        Json $json
+        TransactionInterfaceFactory    $transactionFactory,
+        LoggerServiceInterface         $logger,
+        Json                           $json
     ) {
         $this->transactionRepository = $transactionRepository;
         $this->transactionFactory = $transactionFactory;
@@ -62,12 +62,12 @@ class TransactionService implements TransactionServiceInterface
      * @inheritDoc
      */
     public function createPreAuthorizationTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $additionalData = []
     ): TransactionInterface {
         $transaction = $this->transactionFactory->create();
         $transaction->setTransactionId($transactionId);
@@ -113,13 +113,13 @@ class TransactionService implements TransactionServiceInterface
      * @inheritDoc
      */
     public function createPostAuthorizationTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface {
         try {
             // Try to find existing transaction
@@ -148,7 +148,7 @@ class TransactionService implements TransactionServiceInterface
             // Update status history
             $this->updateStatusHistory($transaction);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Create new transaction if not found
             $transaction = $this->transactionFactory->create();
             $transaction->setTransactionId($transactionId);
@@ -200,17 +200,49 @@ class TransactionService implements TransactionServiceInterface
     }
 
     /**
+     * Update the status history of a transaction
+     *
+     * @param TransactionInterface $transaction
+     * @return void
+     */
+    private function updateStatusHistory(TransactionInterface $transaction): void
+    {
+        $history = [];
+
+        // Get existing history if available
+        if ($transaction->getStatusHistory()) {
+            try {
+                $history = $this->json->unserialize($transaction->getStatusHistory());
+            } catch (Exception $e) {
+                $this->logger->error('Error unserializing status history: ' . $e->getMessage());
+                $history = [];
+            }
+        }
+
+        // Add new status change to history
+        $history[] = [
+            'from' => $transaction->getPreviousStatus(),
+            'to' => $transaction->getStatus(),
+            'timestamp' => date('Y-m-d H:i:s'),
+            'user' => $transaction->getUpdatedBy()
+        ];
+
+        // Update transaction with new history
+        $transaction->setStatusHistory($this->json->serialize($history));
+    }
+
+    /**
      * @inheritDoc
      */
     public function createCaptureTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface {
         $transaction = $this->transactionFactory->create();
         $transaction->setTransactionId($transactionId);
@@ -268,14 +300,14 @@ class TransactionService implements TransactionServiceInterface
      * @inheritDoc
      */
     public function createRefundTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface {
         $transaction = $this->transactionFactory->create();
         $transaction->setTransactionId($transactionId);
@@ -333,14 +365,14 @@ class TransactionService implements TransactionServiceInterface
      * @inheritDoc
      */
     public function createVoidTransaction(
-        string $transactionId,
+        string         $transactionId,
         OrderInterface $order,
-        float $amount,
-        string $currency,
-        array $requestData = [],
-        array $responseData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        float          $amount,
+        string         $currency,
+        array          $requestData = [],
+        array          $responseData = [],
+        string         $status = TransactionInterface::STATUS_SUCCESS,
+        array          $additionalData = []
     ): TransactionInterface {
         $transaction = $this->transactionFactory->create();
         $transaction->setTransactionId($transactionId);
@@ -398,13 +430,13 @@ class TransactionService implements TransactionServiceInterface
      * @inheritDoc
      */
     public function createWebhookTransaction(
-        string $transactionId,
+        string          $transactionId,
         ?OrderInterface $order = null,
-        ?float $amount = null,
-        string $currency = 'USD',
-        array $webhookData = [],
-        string $status = TransactionInterface::STATUS_SUCCESS,
-        array $additionalData = []
+        ?float          $amount = null,
+        string          $currency = 'USD',
+        array           $webhookData = [],
+        string          $status = TransactionInterface::STATUS_SUCCESS,
+        array           $additionalData = []
     ): TransactionInterface {
         $transaction = $this->transactionFactory->create();
         $transaction->setTransactionId($transactionId);
@@ -466,8 +498,8 @@ class TransactionService implements TransactionServiceInterface
      */
     public function updateTransactionStatus(
         TransactionInterface $transaction,
-        string $status,
-        array $additionalData = []
+        string               $status,
+        array                $additionalData = []
     ): TransactionInterface {
         $transaction->setPreviousStatus($transaction->getStatus());
         $transaction->setStatus($status);
@@ -501,15 +533,6 @@ class TransactionService implements TransactionServiceInterface
     /**
      * @inheritDoc
      */
-    public function getTransactionHistoryForOrder(OrderInterface $order): array
-    {
-        $searchResults = $this->transactionRepository->getByOrderId((string)$order->getEntityId());
-        return $searchResults->getItems();
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getLatestTransactionForOrder(OrderInterface $order): ?TransactionInterface
     {
         $transactions = $this->getTransactionHistoryForOrder($order);
@@ -527,34 +550,11 @@ class TransactionService implements TransactionServiceInterface
     }
 
     /**
-     * Update the status history of a transaction
-     *
-     * @param TransactionInterface $transaction
-     * @return void
+     * @inheritDoc
      */
-    private function updateStatusHistory(TransactionInterface $transaction): void
+    public function getTransactionHistoryForOrder(OrderInterface $order): array
     {
-        $history = [];
-
-        // Get existing history if available
-        if ($transaction->getStatusHistory()) {
-            try {
-                $history = $this->json->unserialize($transaction->getStatusHistory());
-            } catch (\Exception $e) {
-                $this->logger->error('Error unserializing status history: ' . $e->getMessage());
-                $history = [];
-            }
-        }
-
-        // Add new status change to history
-        $history[] = [
-            'from' => $transaction->getPreviousStatus(),
-            'to' => $transaction->getStatus(),
-            'timestamp' => date('Y-m-d H:i:s'),
-            'user' => $transaction->getUpdatedBy()
-        ];
-
-        // Update transaction with new history
-        $transaction->setStatusHistory($this->json->serialize($history));
+        $searchResults = $this->transactionRepository->getByOrderId((string)$order->getEntityId());
+        return $searchResults->getItems();
     }
 }

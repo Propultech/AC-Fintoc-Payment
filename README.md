@@ -153,7 +153,7 @@ The module includes a real Refunds API client using Guzzle.
   - JSON body:
     - `resource_id`: Payment Intent ID
     - `resource_type`: `payment_intent`
-    - `amount`: integer (minor units/cents)
+    - `amount`: integer
     - `currency`: e.g., `CLP`
     - `metadata`: optional
   - Response handling: stores external refund id `id` and initial `status` (usually `pending`). Errors surface detailed messages from Fintoc in logs and exceptions.
@@ -191,3 +191,25 @@ This module includes unit tests following Magento 2 testing conventions.
 
 ## License
 GPL-3.0. See LICENSE.
+
+
+## Admin: Transaction View
+
+The transaction details page (Sales → Fintoc → Transactions → click a row) is organized into tabs:
+
+- Information: Shows Fintoc Transaction Details (ID, order, type/status, amounts, metadata, etc.) and the Status History rendered as formatted JSON.
+- Webhook History: Shows the Webhook Data grouped by event type in an accordion. Each event type (e.g., payment_intent.succeeded, checkout_session.finished) expands to a list of received payloads, each prettified for readability.
+
+### Transaction View Buttons
+The transaction details page (Sales → Fintoc → Transactions → click a row) now includes quick actions:
+
+- Back: Returns to the Transactions grid.
+- Refund: Shown only when the transaction Type is Authorization. Opens the Fintoc Refund form for the related order.
+- Request Cancellation: Shown only when the transaction Type is Refund and the Status is Pending (i.e., the refund can be canceled). Submits a POST (with form key) to cancel the refund request.
+
+Developer notes (routes):
+- Grid: `fintoc/transactions/index`
+- Transaction View: `fintoc/transactions/view` (param `id`)
+- Refund Create (GET): `fintoc_refunds/refund/create` (param `order_id`)
+- Refund Save (POST): `fintoc_refunds/refund/save` (form POST; requires form key)
+- Refund Cancel (POST): `fintoc_refunds/refund/cancel` (POST params `refund_id`, optional `order_id`, requires form key)

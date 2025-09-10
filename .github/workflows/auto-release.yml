@@ -43,10 +43,10 @@ jobs:
         run: |
           if [ -z "${{ steps.previoustag.outputs.tag }}" ]; then
             # If no previous tag, get all commits
-            CHANGELOG=$(git log --pretty=format:"* %s (%an)" --no-merges)
+            CHANGELOG=$(git log --pretty=format:"* %s" --no-merges)
           else
             # If previous tag exists, get commits since then
-            CHANGELOG=$(git log ${{ steps.previoustag.outputs.tag }}..HEAD --pretty=format:"* %s (%an)" --no-merges)
+            CHANGELOG=$(git log ${{ steps.previoustag.outputs.tag }}..HEAD --pretty=format:"* %s" --no-merges)
           fi
           # Save changelog to a temporary file to handle multi-line output
           echo "$CHANGELOG" > changelog.txt

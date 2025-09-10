@@ -35,29 +35,35 @@ class RefundsApiClient implements RefundsApiClientInterface
     /**
      * Create a refund at Fintoc.
      * @param string $paymentIntentId
-     * @param int $amountCents
+     * @param float|null $amount Amount to refund. Omit (null) for full refunds.
      * @param string $currency
      * @param array $metadata
      * @return array{external_id:string,status:string,response:array}
      * @throws GuzzleException
      */
-    public function createRefund(string $paymentIntentId, int $amountCents, string $currency, array $metadata = []): array
+    public function createRefund(string $paymentIntentId, ?float $amount, string $currency, array $metadata = []): array
     {
         $baseUrl = rtrim((string)$this->configService->getConfig('payment/fintoc_payment/api_base_url') ?: 'https://api.fintoc.com', '/');
         $path = (string)$this->configService->getConfig('payment/fintoc_payment/refunds_create_path') ?: '/v1/refunds';
         $url = $baseUrl . $path;
 
         $secret = trim((string)$this->configService->getApiSecret());
-        $idempotency = $this->buildIdempotencyKey($paymentIntentId, $amountCents, $currency, $metadata);
+        $normalizedMeta = $this->normalizeMetadata($metadata);
+        $idempotency = $this->buildIdempotencyKey($paymentIntentId, $amount, $currency, $normalizedMeta);
 
         $payload = [
-            'resource_id' => $paymentIntentId,
             'resource_type' => 'payment_intent',
-            'amount' => $amountCents,
-            'currency' => $currency,
+            'resource_id' => $paymentIntentId,
         ];
-        if (!empty($metadata)) {
-            $payload['metadata'] = $metadata;
+        if ($amount !== null) {
+            $payload['amount'] = $amount;
+        }
+        if (!empty($normalizedMeta)) {
+            $payload['metadata'] = $normalizedMeta;
+        }
+        // Safety: do not send metadata if it somehow becomes an empty string or empty structure
+        if (isset($payload['metadata']) && (!is_array($payload['metadata']) || $payload['metadata'] === [])) {
+            unset($payload['metadata']);
         }
 
         $headers = [
@@ -141,19 +147,79 @@ class RefundsApiClient implements RefundsApiClientInterface
     }
 
     /**
+     * Normalize metadata: ensure it's an associative array, stripping empty strings, nulls, and empty arrays.
+     * Keeps numeric zeros and booleans.
+     *
+     * @param mixed $metadata
+     * @return array
+     */
+    private function normalizeMetadata($metadata): array
+    {
+        // Ensure metadata is an associative array of string=>string pairs, no empties.
+        // - Non-string scalars are cast to strings
+        // - Arrays/objects are JSON-encoded strings
+        // - Empty strings are dropped
+        if (!is_array($metadata)) {
+            return [];
+        }
+        $result = [];
+        foreach ($metadata as $k => $v) {
+            // Normalize key to string
+            $key = (string)$k;
+            if ($key === '') {
+                continue;
+            }
+
+            // Handle nulls
+            if ($v === null) {
+                continue;
+            }
+
+            // For arrays/objects: JSON encode (single level in result)
+            if (is_array($v) || is_object($v)) {
+                // Remove empties recursively for cleaner JSON
+                $clean = $this->normalizeMetadata((array)$v);
+                if ($clean === []) {
+                    continue;
+                }
+                $str = json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                if (!is_string($str) || trim($str) === '') {
+                    continue;
+                }
+                $result[$key] = $str;
+                continue;
+            }
+
+            // Scalars: cast to string and trim
+            if (is_bool($v)) {
+                $str = $v ? 'true' : 'false';
+            } else {
+                $str = (string)$v;
+            }
+            $str = trim($str);
+            if ($str === '') {
+                continue;
+            }
+            $result[$key] = $str;
+        }
+        return $result;
+    }
+
+    /**
      * @param string $paymentIntentId
-     * @param int $amountCents
+     * @param float|null $amount
      * @param string $currency
      * @param array $metadata
      * @return string
      */
-    private function buildIdempotencyKey(string $paymentIntentId, int $amountCents, string $currency, array $metadata): string
+    private function buildIdempotencyKey(string $paymentIntentId, ?float $amount, string $currency, array $metadata): string
     {
-        $parts = $paymentIntentId . '|' . $amountCents . '|' . $currency;
+        $amountPart = $amount === null ? 'full' : (string)$amount;
+        $parts = $paymentIntentId . '|' . $amountPart . '|' . $currency;
         if (isset($metadata['mode'])) {
             $parts .= '|' . (string)$metadata['mode'];
         }
-        // Stable hash to ensure idempotency per (intent,amount,currency,mode)
+        // Stable hash to ensure idempotency per (intent,amount/case,currency,mode)
         return 'magento-' . substr(sha1($parts), 0, 32);
     }
 

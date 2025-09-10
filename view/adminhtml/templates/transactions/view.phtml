@@ -1,10 +1,13 @@
 <?php
-/** @var \Fintoc\Payment\Block\Adminhtml\Transactions\View $block */
+/** @var \Fintoc\Payment\Block\Adminhtml\Transactions\View\Content $block */
+
 /** @var \Magento\Framework\Escaper $escaper */
 
 $transaction = $block->getTransaction();
 if (!$transaction): ?>
-    <div class="message message-error"><div><?= $escaper->escapeHtml(__('Transaction not found.')) ?></div></div>
+    <div class="message message-error">
+        <div><?= $escaper->escapeHtml(__('Transaction not found.')) ?></div>
+    </div>
     <?php return; ?>
 <?php endif; ?>
 <?php
@@ -35,9 +38,17 @@ $fields = [
 ];
 ?>
 
-<div class="page-main-actions">
-    <div class="page-actions"></div>
-</div>
+<?php if ($block->canCancelRefund()): ?>
+    <form id="fintoc-refund-cancel-form" method="post"
+          action="<?= $escaper->escapeUrl($block->getUrl('fintoc_refunds/refund/cancel')) ?>" style="display:none;">
+        <?= /* form key */
+        $block->getBlockHtml('formkey') ?>
+        <?php if ($block->getOrderId()): ?>
+            <input type="hidden" name="order_id" value="<?= (int)$block->getOrderId() ?>"/>
+        <?php endif; ?>
+        <input type="hidden" name="refund_id" value="<?= $escaper->escapeHtmlAttr($block->getRefundId()) ?>"/>
+    </form>
+<?php endif; ?>
 
 <div class="admin__page-section">
     <div class="admin__page-section-title">
@@ -48,7 +59,9 @@ $fields = [
             <table class="data-table admin__control-table">
                 <tbody>
                 <?php foreach ($fields as $label => $value): ?>
-                    <?php if ($value === null || $value === '') { continue;} ?>
+                    <?php if ($value === null || $value === '') {
+                        continue;
+                    } ?>
                     <tr>
                         <th style="width: 240px;"><?= $escaper->escapeHtml((string)__($label)); ?></th>
                         <td><?= $esc($value); ?></td>

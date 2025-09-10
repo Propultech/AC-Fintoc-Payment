@@ -41,29 +41,12 @@
     </listingToolbar>
 
     <columns name="fintoc_refunds_orders_columns">
-        <selectionsColumn name="ids">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="indexField" xsi:type="string">entity_id</item>
-                </item>
-            </argument>
-        </selectionsColumn>
-
-        <column name="entity_id">
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="label" xsi:type="string" translate="true">ID</item>
-                    <item name="filter" xsi:type="string">textRange</item>
-                    <item name="sorting" xsi:type="string">desc</item>
-                </item>
-            </argument>
-        </column>
-
         <column name="parent_id">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
                     <item name="label" xsi:type="string" translate="true">Order ID</item>
                     <item name="filter" xsi:type="string">text</item>
+                    <item name="sorting" xsi:type="string">desc</item>
                 </item>
             </argument>
         </column>
@@ -88,13 +71,26 @@
             </argument>
         </column>
 
-        <column name="has_non_canceled_refund" component="Magento_Ui/js/grid/columns/select">
+        <column name="order_payment_status" component="Magento_Ui/js/grid/columns/select">
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="label" xsi:type="string" translate="true">Has Non-Canceled Refunds</item>
+                    <item name="label" xsi:type="string" translate="true">Payment Status</item>
                     <item name="filter" xsi:type="string">select</item>
                     <item name="dataType" xsi:type="string">select</item>
-                    <item name="options" xsi:type="object">Magento\Config\Model\Config\Source\Yesno</item>
+                    <item name="options" xsi:type="array">
+                        <item name="0" xsi:type="array">
+                            <item name="label" xsi:type="string" translate="true">Paid</item>
+                            <item name="value" xsi:type="string">Paid</item>
+                        </item>
+                        <item name="1" xsi:type="array">
+                            <item name="label" xsi:type="string" translate="true">Refund requested</item>
+                            <item name="value" xsi:type="string">Refund requested</item>
+                        </item>
+                        <item name="2" xsi:type="array">
+                            <item name="label" xsi:type="string" translate="true">Refunded</item>
+                            <item name="value" xsi:type="string">Refunded</item>
+                        </item>
+                    </item>
                 </item>
             </argument>
         </column>

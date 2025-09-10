@@ -8,35 +8,101 @@ namespace Fintoc\Payment\Block\Adminhtml\Transactions;
 
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Api\TransactionRepositoryInterface;
-use Magento\Backend\Block\Template;
-use Magento\Backend\Block\Template\Context;
-use Magento\Backend\Model\UrlInterface as BackendUrl;
-use Magento\Framework\Serialize\Serializer\Json;
 use Fintoc\Payment\Block\Traits\DateTimeFormatterTrait;
+use Magento\Backend\Block\Widget\Context;
+use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Throwable;
 
-class View extends Template
+class View extends \Magento\Backend\Block\Widget\Form\Container
 {
     use DateTimeFormatterTrait;
+
+    /** @var string */
+    protected $_objectId = 'id';
+
+    /** @var string */
+    protected $_blockGroup = 'Fintoc_Payment';
+
+    /** @var string */
+    protected $_controller = 'adminhtml_transactions';
+
     /** @var TransactionRepositoryInterface */
     private $transactionRepository;
 
     /** @var Json */
     private $json;
 
-    /** @var BackendUrl */
-    private $backendUrl;
+    /**
+     * @var
+     */
+    private $orderRepository;
 
+    /**
+     * @param Context $context
+     * @param TransactionRepositoryInterface $transactionRepository
+     * @param Json $json
+     * @param OrderRepositoryInterface $orderRepository
+     * @param array $data
+     */
     public function __construct(
         Context                        $context,
         TransactionRepositoryInterface $transactionRepository,
         Json                           $json,
+        OrderRepositoryInterface       $orderRepository,
         array                          $data = []
-    ) {
-        parent::__construct($context, $data);
+    )
+    {
         $this->transactionRepository = $transactionRepository;
         $this->json = $json;
-        $this->backendUrl = $context->getUrlBuilder();
+        $this->orderRepository = $orderRepository;
+        parent::__construct($context, $data);
+    }
+
+    /**
+     * @return void
+     */
+    protected function _construct()
+    {
+        parent::_construct();
+        $this->buttonList->remove('reset');
+        $this->buttonList->remove('save');
+        $this->buttonList->remove('delete');
+
+        // Back to grid
+        $this->buttonList->add(
+            'back',
+            [
+                'label' => __("Back"),
+                'onclick' => sprintf('setLocation("%s")', $this->getUrl('fintoc/transactions/index')),
+                'class' => 'back'
+            ],
+            -1
+        );
+
+        // Refund button
+        if ($this->canRefund()) {
+            $this->buttonList->add(
+                'fintoc_refund',
+                [
+                    'label' => __("Refund"),
+                    'class' => 'save primary',
+                    'onclick' => sprintf('setLocation("%s")', $this->getRefundCreateUrl())
+                ]
+            );
+        }
+
+        // Request Cancellation (requires POST) — will submit hidden form rendered by content template
+        if ($this->canCancelRefund()) {
+            $this->buttonList->add(
+                'fintoc_refund_cancel',
+                [
+                    'label' => __("Request Cancellation"),
+                    'class' => 'action-secondary',
+                    'onclick' => 'if (confirm("Are you sure you want to request cancellation of this refund?")) { var f = document.getElementById("fintoc-refund-cancel-form"); if (f) { f.submit(); } }'
+                ]
+            );
+        }
     }
 
     /**
@@ -138,6 +204,87 @@ class View extends Template
         if (!$orderIncrementId) {
             return null;
         }
-        return $this->backendUrl->getUrl('sales/order/view', ['order_id' => null, 'increment_id' => $orderIncrementId]);
+        return $this->getUrl('sales/order/view', ['order_id' => null, 'increment_id' => $orderIncrementId]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getHeaderText(): string
+    {
+        $tr = $this->getTransaction();
+        if ($tr) {
+            $label = $tr->getTransactionId() ?: ('ID ' . $tr->getEntityId());
+            return (string)__("Fintoc Transaction #%1", $label);
+        }
+        return (string)__("Fintoc Transaction");
+    }
+
+    /**
+     * @return bool
+     */
+    public function canRefund(): bool
+    {
+        $tr = $this->getTransaction();
+        if (!$tr) {
+            return false;
+        }
+
+        $order = $this->orderRepository->get($tr->getOrderId());
+        $additionalInformation = $order->getPayment()->getAdditionalInformation();
+        $paymentIntentId = $additionalInformation['fintoc_payment_id'] ?? null;
+
+        if (!$paymentIntentId) {
+            return false;
+        }
+
+        return (string)$tr->getType() === TransactionInterface::TYPE_AUTHORIZATION && (bool)$tr->getOrderId();
+    }
+
+    /**
+     * @return bool
+     */
+    public function canCancelRefund(): bool
+    {
+        $tr = $this->getTransaction();
+        if (!$tr) {
+            return false;
+        }
+        return (string)$tr->getType() === TransactionInterface::TYPE_REFUND
+            && (string)$tr->getStatus() === TransactionInterface::STATUS_PENDING;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRefundCreateUrl(): string
+    {
+        return $this->getUrl('fintoc_refunds/refund/create', ['order_id' => $this->getOrderId()]);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCancelUrl(): string
+    {
+        return $this->getUrl('fintoc_refunds/refund/cancel');
+    }
+
+    /**
+     * @return int
+     */
+    public function getOrderId(): int
+    {
+        $tr = $this->getTransaction();
+        return $tr && $tr->getOrderId() ? (int)$tr->getOrderId() : 0;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRefundId(): string
+    {
+        $tr = $this->getTransaction();
+        return $tr ? (string)$tr->getTransactionId() : '';
     }
 }

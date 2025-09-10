@@ -27,7 +27,6 @@ class ConfigurationService implements ConfigurationServiceInterface
     private const XML_PATH_PAYMENT_ACTION = 'payment/fintoc_payment/payment_action';
     private const XML_PATH_ALLOW_SPECIFIC = 'payment/fintoc_payment/allowspecific';
     private const XML_PATH_SPECIFIC_COUNTRY = 'payment/fintoc_payment/specificcountry';
-    private const XML_PATH_API_KEY = 'payment/fintoc_payment/api_key';
     private const XML_PATH_API_SECRET = 'payment/fintoc_payment/api_secret';
     private const XML_PATH_WEBHOOK_SECRET = 'payment/fintoc_payment/webhook_secret';
     private const XML_PATH_DEBUG = 'payment/fintoc_payment/debug';
@@ -130,14 +129,6 @@ class ConfigurationService implements ConfigurationServiceInterface
     {
         $countries = $this->getConfig(self::XML_PATH_SPECIFIC_COUNTRY, ScopeInterface::SCOPE_STORE, $scopeCode);
         return $countries ? explode(',', $countries) : [];
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getApiKey(?string $scopeCode = null): string
-    {
-        return (string)$this->getConfig(self::XML_PATH_API_KEY, ScopeInterface::SCOPE_STORE, $scopeCode);
     }
 
     /**

@@ -164,7 +164,7 @@ class Success extends Template
             return $order->formatPrice($amount);
         }
         if (isset($ai['fintoc_payment_amount'])) {
-            $amount = ((float)$ai['fintoc_payment_amount']) / 100; // cents to major units
+            $amount = (float)$ai['fintoc_payment_amount'];
             return $order->formatPrice($amount);
         }
         return null;

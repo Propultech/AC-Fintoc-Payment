@@ -60,14 +60,6 @@ interface ConfigurationServiceInterface
     public function getSpecificCountries(?string $scopeCode = null): array;
 
     /**
-     * Get public API key
-     *
-     * @param string|null $scopeCode
-     * @return string
-     */
-    public function getApiKey(?string $scopeCode = null): string;
-
-    /**
      * Get decrypted API secret
      *
      * @param string|null $scopeCode
@@ -76,7 +68,7 @@ interface ConfigurationServiceInterface
     public function getApiSecret(?string $scopeCode = null): string;
 
     /**
-     * Get decrypted webhook secret
+     * Get a decrypted webhook secret
      *
      * @param string|null $scopeCode
      * @return string

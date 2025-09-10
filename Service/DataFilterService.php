@@ -22,8 +22,8 @@ class DataFilterService
      * @var array
      */
     private $sensitiveKeys = [
-        'api_key',
-        'apiKey',
+        'api_secret',
+        'apiSecret',
         'secret',
         'password',
         'token',

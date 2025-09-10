@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!-- Copyright © Fintoc. -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <!-- Transaction Repository -->
     <preference for="Fintoc\Payment\Api\TransactionRepositoryInterface" type="Fintoc\Payment\Model\TransactionRepository" />
@@ -19,6 +20,27 @@
     <!-- Data Interfaces -->
     <preference for="Fintoc\Payment\Api\Data\TransactionInterface" type="Fintoc\Payment\Model\Transaction" />
     <preference for="Fintoc\Payment\Api\Data\TransactionSearchResultsInterface" type="Fintoc\Payment\Model\TransactionSearchResults" />
+
+    <!-- Webhook Interfaces -->
+    <preference for="Fintoc\Payment\Api\Webhook\WebhookRequestValidatorInterface" type="Fintoc\Payment\Service\Webhook\WebhookRequestValidator"/>
+    <preference for="Fintoc\Payment\Api\Webhook\WebhookRequestParserInterface" type="Fintoc\Payment\Service\Webhook\WebhookRequestParser"/>
+    <preference for="Fintoc\Payment\Api\Webhook\WebhookIdempotencyServiceInterface" type="Fintoc\Payment\Service\Webhook\WebhookIdempotencyService"/>
+    <preference for="Fintoc\Payment\Api\Webhook\WebhookRouterInterface" type="Fintoc\Payment\Service\Webhook\WebhookRouter"/>
+
+    <type name="Fintoc\Payment\Service\Webhook\WebhookRouter">
+        <arguments>
+            <argument name="handlers" xsi:type="array">
+                <item name="refund.succeeded" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\RefundSucceededHandler</item>
+                <item name="refund.failed" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\RefundFailedHandler</item>
+                <item name="refund.in_progress" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\RefundInProgressHandler</item>
+                <item name="payment_intent.succeeded" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\PaymentIntentSucceededHandler</item>
+                <item name="payment_intent.failed" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\PaymentIntentFailedHandler</item>
+                <item name="payment_intent.pending" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\PaymentIntentPendingHandler</item>
+                <item name="checkout_session.finished" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\CheckoutSessionFinishedHandler</item>
+                <item name="checkout_session.expired" xsi:type="object">Fintoc\Payment\Service\Webhook\Handler\CheckoutSessionExpiredHandler</item>
+            </argument>
+        </arguments>
+    </type>
 
     <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
         <arguments>

@@ -39,7 +39,7 @@ class ConfigProvider implements ConfigProviderInterface
             'payment' => [
                 Payment::CODE => [
                     'title' => $this->configService->getTitle(),
-                    'apiKey' => $this->configService->getApiKey(),
+                    'apiKey' => $this->configService->getApiSecret(),
                     'isDebugMode' => $this->configService->isDebugMode()
                 ]
             ]

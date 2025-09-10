@@ -188,4 +188,19 @@ interface TransactionServiceInterface
      * @return TransactionInterface|null
      */
     public function getLatestTransactionForOrder(OrderInterface $order): ?TransactionInterface;
+
+    /**
+     * Append a webhook payload under the given event type key into the transaction's webhook_data field.
+     * If the event type already exists, the payload is appended preserving all calls.
+     *
+     * @param TransactionInterface $transaction
+     * @param string $eventType e.g. "payment_intent.succeeded"
+     * @param array $payload Raw decoded JSON payload from the webhook
+     * @return TransactionInterface
+     */
+    public function appendWebhookData(
+        TransactionInterface $transaction,
+        string $eventType,
+        array $payload
+    ): TransactionInterface;
 }

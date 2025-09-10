@@ -1,0 +1,86 @@
+<?php
+/** @var \Fintoc\Payment\Block\Adminhtml\Transactions\View\Content $block */
+
+/** @var \Magento\Framework\Escaper $escaper */
+
+$transaction = $block->getTransaction();
+if (!$transaction): ?>
+    <div class="message message-error">
+        <div><?= $escaper->escapeHtml(__('Transaction not found.')) ?></div>
+    </div>
+    <?php return; ?>
+<?php endif; ?>
+<?php
+$esc = function ($v) use ($escaper) {
+    return $escaper->escapeHtml((string)$v);
+};
+
+$fields = [
+    'Entity ID' => $transaction->getEntityId(),
+    'Transaction ID' => $transaction->getTransactionId(),
+    'Order #' => $transaction->getOrderIncrementId(),
+    'Type' => $block->getTypeLabel((string)$transaction->getType()),
+    'Status' => $block->getStatusLabel((string)$transaction->getStatus()),
+    'Previous Status' => $transaction->getPreviousStatus() ? $block->getStatusLabel((string)$transaction->getPreviousStatus()) : '',
+    'Amount' => $block->formatAmount($transaction->getAmount(), $transaction->getCurrency()),
+    'Currency' => $transaction->getCurrency(),
+    'Reference' => $transaction->getReference(),
+    'Error Code' => $transaction->getErrorCode(),
+    'Error Message' => $transaction->getErrorMessage(),
+    'Retry Attempts' => $transaction->getRetryAttempts(),
+    'Created By' => $transaction->getCreatedBy(),
+    'Updated By' => $transaction->getUpdatedBy(),
+    'IP Address' => $transaction->getIpAddress(),
+    'User Agent' => $transaction->getUserAgent(),
+    'Created At' => $block->formatDateTimeExact($transaction->getCreatedAt()),
+    'Updated At' => $block->formatDateTimeExact($transaction->getUpdatedAt()),
+];
+?>
+
+<?php if ($block->canCancelRefund()): ?>
+    <form id="fintoc-refund-cancel-form" method="post"
+          action="<?= $escaper->escapeUrl($block->getUrl('fintoc_refunds/refund/cancel')) ?>" style="display:none;">
+        <?= /* form key */
+        $block->getBlockHtml('formkey') ?>
+        <?php if ($block->getOrderId()): ?>
+            <input type="hidden" name="order_id" value="<?= (int)$block->getOrderId() ?>"/>
+        <?php endif; ?>
+        <input type="hidden" name="refund_id" value="<?= $escaper->escapeHtmlAttr($block->getRefundId()) ?>"/>
+    </form>
+<?php endif; ?>
+
+<div class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Fintoc Transaction Details')); ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div class="admin__control-table-wrapper">
+            <table class="data-table admin__control-table">
+                <tbody>
+                <?php foreach ($fields as $label => $value): ?>
+                    <?php if ($value === null || $value === '') {
+                        continue;
+                    } ?>
+                    <tr>
+                        <th style="width: 240px;"><?= $escaper->escapeHtml((string)__($label)); ?></th>
+                        <td><?= $esc($value); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php if ($transaction->getStatusHistory()): ?>
+    <div class="admin__page-section">
+        <div class="admin__page-section-title">
+            <span class="title"><?= $escaper->escapeHtml(__('Status History')); ?></span>
+        </div>
+        <div class="admin__page-section-content">
+        <pre style="max-height: 500px; overflow:auto; background:#f8f8f8; border:1px solid #ddd; padding:12px;">
+            <?= $escaper->escapeHtml($block->prettyJson($transaction->getStatusHistory())); ?>
+        </pre>
+        </div>
+    </div>
+<?php endif; ?>

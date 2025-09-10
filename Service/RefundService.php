@@ -17,13 +17,39 @@ use Psr\Log\LoggerInterface;
 
 class RefundService implements RefundServiceInterface
 {
+    /**
+     * @var RefundsApiClientInterface
+     */
     private RefundsApiClientInterface $apiClient;
+    /**
+     * @var TransactionServiceInterface
+     */
     private TransactionServiceInterface $transactionService;
+    /**
+     * @var TransactionRepositoryInterface
+     */
     private TransactionRepositoryInterface $transactionRepository;
+    /**
+     * @var PaymentConfigServiceInterface
+     */
     private PaymentConfigServiceInterface $configService;
+    /**
+     * @var Json
+     */
     private Json $json;
+    /**
+     * @var LoggerInterface
+     */
     private LoggerInterface $logger;
 
+    /**
+     * @param RefundsApiClientInterface $apiClient
+     * @param TransactionServiceInterface $transactionService
+     * @param TransactionRepositoryInterface $transactionRepository
+     * @param PaymentConfigServiceInterface $configService
+     * @param Json $json
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         RefundsApiClientInterface      $apiClient,
         TransactionServiceInterface    $transactionService,
@@ -31,7 +57,8 @@ class RefundService implements RefundServiceInterface
         PaymentConfigServiceInterface  $configService,
         Json                           $json,
         LoggerInterface                $logger
-    ) {
+    )
+    {
         $this->apiClient = $apiClient;
         $this->transactionService = $transactionService;
         $this->transactionRepository = $transactionRepository;
@@ -43,7 +70,7 @@ class RefundService implements RefundServiceInterface
     /**
      * @throws LocalizedException
      */
-    public function requestRefund(OrderInterface $order, float $amount, ?string $currency = null, array $metadata = []): TransactionInterface
+    public function requestRefund(OrderInterface $order, ?float $amount, ?string $currency = null, array $metadata = []): TransactionInterface
     {
         $currency = $currency ?: (string)$order->getOrderCurrencyCode();
 
@@ -61,18 +88,33 @@ class RefundService implements RefundServiceInterface
             throw new LocalizedException(__('Order is not paid with Fintoc payment method'));
         }
 
-        // Amount validations
-        if ($amount <= 0) {
-            throw new LocalizedException(__('Refund amount must be greater than zero'));
-        }
-
-        $allowPartial = (bool)$this->configService->getConfig('payment/fintoc_payment/refunds_allow_partial');
         $refundable = $this->getRefundableAmount($order);
-        if (!$allowPartial && $amount < $refundable) {
-            throw new LocalizedException(__('Partial refunds are disabled; you must refund the full refundable amount (%1)', $refundable));
-        }
-        if ($amount - $refundable > 0.0001) {
-            throw new LocalizedException(__('Refund amount exceeds refundable amount (%1)', $refundable));
+        $allowPartial = (bool)$this->configService->getConfig('payment/fintoc_payment/refunds_allow_partial');
+
+        // Determine mode and validate when partial
+        $sendAmount = $amount; // null for full, value for partial
+        $recordAmount = $refundable; // default to full refundable for recording
+        if ($amount !== null) {
+            // Amount validations for partial
+            if ($amount <= 0) {
+                throw new LocalizedException(__('Refund amount must be greater than zero'));
+            }
+            if (!$allowPartial && $amount < $refundable) {
+                throw new LocalizedException(__('Partial refunds are disabled; you must refund the full refundable amount (%1)', $refundable));
+            }
+            if ($amount - $refundable > 0.0001) {
+                throw new LocalizedException(__('Refund amount exceeds refundable amount (%1)', $refundable));
+            }
+            $recordAmount = $amount;
+        } else {
+            // Full refund path: ensure there is something to refund
+            if ($refundable <= 0) {
+                throw new LocalizedException(__('Nothing to refund'));
+            }
+            // Mark mode as full if not already provided
+            if (!isset($metadata['mode'])) {
+                $metadata['mode'] = 'full';
+            }
         }
 
         // Obtain Fintoc payment identifier to refund
@@ -81,10 +123,11 @@ class RefundService implements RefundServiceInterface
             throw new LocalizedException(__('Missing Fintoc payment identifier for order'));
         }
 
-        $amountCents = (int)round($amount * 100);
+        // Ensure order increment id is always present in metadata
+        $metadata['ecommerce_order_id'] = (string)$order->getIncrementId();
 
         // Call API client
-        $apiResult = $this->apiClient->createRefund($paymentIntentId, $amountCents, $currency, $metadata);
+        $apiResult = $this->apiClient->createRefund($paymentIntentId, $sendAmount, $currency, $metadata);
         $externalId = (string)($apiResult['external_id'] ?? '');
         if ($externalId === '') {
             throw new LocalizedException(__('Refund API did not return a valid external ID'));
@@ -94,7 +137,7 @@ class RefundService implements RefundServiceInterface
         return $this->transactionService->createRefundTransaction(
             $externalId,
             $order,
-            $amount,
+            $recordAmount,
             $currency,
             ['payment_intent_id' => $paymentIntentId, 'metadata' => $metadata],
             (array)($apiResult['response'] ?? []),
@@ -103,6 +146,16 @@ class RefundService implements RefundServiceInterface
         );
     }
 
+    /**
+     * Calculates and returns the maximum refundable amount for a given order.
+     *
+     * The refundable amount is determined by subtracting the total refunded amount
+     * from the total paid amount. If a valid paid amount is not available, the order's
+     * grand total is used as a fallback.
+     *
+     * @param OrderInterface $order The order for which the refundable amount is computed.
+     * @return float The calculated refundable amount, rounded to two decimal places.
+     */
     private function getRefundableAmount(OrderInterface $order): float
     {
         $totalPaid = (float)$order->getTotalPaid();
@@ -124,6 +177,14 @@ class RefundService implements RefundServiceInterface
         return round($refundable, 2);
     }
 
+    /**
+     * Retrieves the payment intent ID associated with a given order. It first checks for the payment intent ID
+     * in the order's payment additional information. If not found or invalid, it falls back to the latest non-refund transaction
+     * associated with the order.
+     *
+     * @param OrderInterface $order The order for which the payment intent ID is being retrieved.
+     * @return string|null The payment intent ID if found; otherwise, null.
+     */
     private function getPaymentIntentIdForOrder(OrderInterface $order): ?string
     {
         $payment = $order->getPayment();
@@ -141,6 +202,14 @@ class RefundService implements RefundServiceInterface
         return null;
     }
 
+    /**
+     * Attempts to cancel a refund request identified by the external refund ID. The method communicates with the API client
+     * to cancel the refund and updates the transaction status in the system accordingly. If the cancellation fails or the
+     * transaction cannot be updated, it logs the error and returns the cancellation status.
+     *
+     * @param string $externalRefundId The unique identifier of the refund to be canceled.
+     * @return bool True if the
+     */
     public function cancelRefund(string $externalRefundId): bool
     {
         $result = $this->apiClient->cancelRefund($externalRefundId);
@@ -157,43 +226,5 @@ class RefundService implements RefundServiceInterface
         }
 
         return $canceled;
-    }
-
-    public function handleWebhook(array $payload): void
-    {
-        // Expect either an event wrapper or a direct refund object
-        $object = $payload['data']['object'] ?? $payload;
-        if (!is_array($object)) {
-            throw new LocalizedException(__('Invalid refund webhook payload'));
-        }
-        $externalId = (string)($object['id'] ?? $object['refund_id'] ?? '');
-        if ($externalId === '') {
-            throw new LocalizedException(__('Refund id missing in webhook'));
-        }
-
-        $status = strtolower((string)($object['status'] ?? ''));
-        $mappedStatus = $this->mapRefundStatusToTransactionStatus($status);
-
-        // Load transaction and update
-        $transaction = $this->transactionRepository->getByTransactionId($externalId);
-        $transaction->setWebhookData($this->json->serialize($object));
-        $this->transactionService->updateTransactionStatus($transaction, $mappedStatus, ['updated_by' => 'webhook']);
-
-        // Order status updates and auto credit memo can be added via observers if required
-    }
-
-    private function mapRefundStatusToTransactionStatus(string $status): string
-    {
-        $status = strtolower($status);
-        if ($status === 'succeeded' || $status === 'success' || $status === 'completed') {
-            return TransactionInterface::STATUS_SUCCESS;
-        }
-        if ($status === 'failed' || $status === 'error') {
-            return TransactionInterface::STATUS_FAILED;
-        }
-        if ($status === 'canceled' || $status === 'cancelled') {
-            return TransactionInterface::STATUS_CANCELED;
-        }
-        return TransactionInterface::STATUS_PENDING;
     }
 }

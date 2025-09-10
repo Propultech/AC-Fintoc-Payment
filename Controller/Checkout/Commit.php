@@ -75,6 +75,7 @@ class Commit extends Action
      * @param TransactionServiceInterface $transactionService
      * @param TransactionRepositoryInterface $transactionRepository
      * @param LoggerInterface $logger
+     * @param CheckoutSession $checkoutSession
      */
     public function __construct(
         Context                        $context,
@@ -99,7 +100,7 @@ class Commit extends Action
     }
 
     /**
-     * Execute action based on request and return result
+     * Execute action based on a request and return result
      *
      * @return ResultInterface
      */
@@ -159,7 +160,7 @@ class Commit extends Action
             } catch (Exception $e2) {
                 $this->logger->debug('Restore quote failed: ' . $e2->getMessage());
             }
-            return $resultRedirect->setPath('checkout/onepage/failure');
+            return $resultRedirect->setPath('checkout/cart');
         }
     }
 
@@ -229,7 +230,7 @@ class Commit extends Action
             ]
         );
 
-        // Add success message
+        // Add a success message
         $this->messageManager->addSuccessMessage(__('Your payment was successful.'));
 
         // Redirect to success page
@@ -289,8 +290,8 @@ class Commit extends Action
             ]
         );
 
-        // Add message
-        $this->messageManager->addWarningMessage(__('Your payment was canceled.'));
+        // Add a message
+        $this->messageManager->addErrorMessage(__('Your payment was canceled.'));
 
         // Restore quote to allow customer to retry checkout
         try {
@@ -300,6 +301,6 @@ class Commit extends Action
         }
 
         // Redirect to failure page
-        return $resultRedirect->setPath('checkout/onepage/failure');
+        return $resultRedirect->setPath('checkout/cart');
     }
 }

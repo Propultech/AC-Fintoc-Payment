@@ -116,7 +116,7 @@ class Create extends Action
                 throw new LocalizedException(__('No order found'));
             }
 
-            $apiKey = $this->getApiKey();
+            $apiSecret = $this->getApiSecret();
             $baseUrl = $this->storeManager->getStore()->getBaseUrl();
 
             // Generate a unique transaction ID
@@ -168,7 +168,7 @@ class Create extends Action
             // Set up the API call options
             $options = [
                 'headers' => [
-                    'Authorization' => $apiKey,
+                    'Authorization' => 'Bearer '.$apiSecret,
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json'
                 ],
@@ -311,7 +311,7 @@ class Create extends Action
      * @return string
      * @throws LocalizedException
      */
-    private function getApiKey()
+    private function getApiSecret()
     {
         $apiSecret = $this->configService->getApiSecret();
 

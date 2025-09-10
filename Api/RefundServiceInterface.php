@@ -12,12 +12,12 @@ interface RefundServiceInterface
      * Initiate a refund request for a Magento order.
      *
      * @param OrderInterface $order
-     * @param float $amount
+     * @param float|null $amount Amount to refund. Omit (null) for full refunds; required for partial refunds.
      * @param string|null $currency
      * @param array $metadata Optional metadata (e.g., reason)
      * @return TransactionInterface Refund transaction (pending initially)
      */
-    public function requestRefund(OrderInterface $order, float $amount, ?string $currency = null, array $metadata = []): TransactionInterface;
+    public function requestRefund(OrderInterface $order, ?float $amount, ?string $currency = null, array $metadata = []): TransactionInterface;
 
     /**
      * Cancel a pending refund if supported.
@@ -27,11 +27,4 @@ interface RefundServiceInterface
      */
     public function cancelRefund(string $externalRefundId): bool;
 
-    /**
-     * Handle webhook payload for refunds.
-     *
-     * @param array $payload
-     * @return void
-     */
-    public function handleWebhook(array $payload): void;
 }

@@ -38,5 +38,12 @@
             <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
             <config_path>payment/fintoc_payment/refunds_status_canceled</config_path>
         </field>
+        <field id="refundable_statuses" translate="label" type="multiselect" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Refundable Orders Statuses</label>
+            <comment>Select which order statuses are eligible to be refunded.</comment>
+            <source_model>Magento\Sales\Model\Config\Source\Order\Status</source_model>
+            <config_path>payment/fintoc_payment/refunds_refundable_statuses</config_path>
+            <validate>required-entry</validate>
+        </field>
     </group>
 </include>

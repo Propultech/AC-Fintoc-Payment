@@ -11,7 +11,6 @@ if (!$transaction): ?>
     <?php return; ?>
 <?php endif; ?>
 <?php
-
 $esc = function ($v) use ($escaper) {
     return $escaper->escapeHtml((string)$v);
 };
@@ -73,27 +72,15 @@ $fields = [
     </div>
 </div>
 
-<?php
-// JSON-like large fields displayed in pretty format
-$jsonSections = [
-    'Request Data' => $transaction->getRequestData(),
-    'Response Data' => $transaction->getResponseData(),
-    'Webhook Data' => $transaction->getWebhookData(),
-    'Status History' => $transaction->getStatusHistory(),
-];
-?>
-
-<?php foreach ($jsonSections as $label => $raw): ?>
-    <?php if ($raw): ?>
-        <div class="admin__page-section">
-            <div class="admin__page-section-title">
-                <span class="title"><?= $escaper->escapeHtml((string)__($label)); ?></span>
-            </div>
-            <div class="admin__page-section-content">
-                <pre style="max-height: 500px; overflow:auto; background:#f8f8f8; border:1px solid #ddd; padding:12px;">
-        <?= $escaper->escapeHtml($block->prettyJson($raw)); ?>
-                </pre>
-            </div>
+<?php if ($transaction->getStatusHistory()): ?>
+    <div class="admin__page-section">
+        <div class="admin__page-section-title">
+            <span class="title"><?= $escaper->escapeHtml(__('Status History')); ?></span>
         </div>
-    <?php endif; ?>
-<?php endforeach; ?>
+        <div class="admin__page-section-content">
+        <pre style="max-height: 500px; overflow:auto; background:#f8f8f8; border:1px solid #ddd; padding:12px;">
+            <?= $escaper->escapeHtml($block->prettyJson($transaction->getStatusHistory())); ?>
+        </pre>
+        </div>
+    </div>
+<?php endif; ?>

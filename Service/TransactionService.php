@@ -557,4 +557,40 @@ class TransactionService implements TransactionServiceInterface
         $searchResults = $this->transactionRepository->getByOrderId((string)$order->getEntityId());
         return $searchResults->getItems();
     }
+
+    /**
+     * Append webhook payload into webhook_data grouped by event type.
+     */
+    public function appendWebhookData(
+        TransactionInterface $transaction,
+        string $eventType,
+        array $payload
+    ): TransactionInterface {
+        $existing = $transaction->getWebhookData();
+        $data = [];
+        if ($existing) {
+            try {
+                $decoded = $this->json->unserialize($existing);
+                if (is_array($decoded)) {
+                    $data = $decoded;
+                }
+            } catch (Exception $e) {
+                // If existing is invalid JSON, start fresh but keep a trace under a special key
+                $data = ['__previous_invalid__' => $existing];
+            }
+        }
+
+        $key = $eventType ?: 'unknown';
+        if (!isset($data[$key])) {
+            $data[$key] = [];
+        }
+        if (!is_array($data[$key])) {
+            $data[$key] = [$data[$key]];
+        }
+        $data[$key][] = $payload;
+
+        $transaction->setWebhookData($this->json->serialize($data));
+        $this->transactionRepository->save($transaction);
+        return $transaction;
+    }
 }

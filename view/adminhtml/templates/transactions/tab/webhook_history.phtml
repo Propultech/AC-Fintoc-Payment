@@ -1,0 +1,59 @@
+<?php
+use Fintoc\Payment\Block\Adminhtml\Transactions\View\Content;
+use Magento\Framework\Escaper;
+
+/** @var Content $block */
+/** @var Escaper $escaper */
+
+
+$transaction = $block->getTransaction();
+if (!$transaction): ?>
+    <div class="message message-error"><div><?= $escaper->escapeHtml(__('Transaction not found.')) ?></div></div>
+    <?php return; ?>
+<?php endif; ?>
+
+<?php
+$webhookRaw = $transaction->getWebhookData();
+$webhooks = [];
+if ($webhookRaw) {
+    try {
+        $webhooks = $block->helperDecodeJson($webhookRaw);
+    } catch (\Throwable $e) {
+        $webhooks = [];
+    }
+}
+?>
+
+<div class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Events')); ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <?php if (!$webhooks || !is_array($webhooks) || empty($webhooks)): ?>
+            <div class="message info empty"><span><?= $escaper->escapeHtml(__('No webhook data recorded.')) ?></span></div>
+        <?php else: ?>
+            <dl class="admin__accordion">
+                <?php foreach (array_reverse($webhooks) as $eventType => $payloads): ?>
+                    <dt class="admin__accordion-title" onclick="var n=this.nextElementSibling;n.style.display=n.style.display==='block'?'none':'block';" style="cursor:pointer;">
+                        <strong><?= $escaper->escapeHtml($eventType) ?></strong>
+                    </dt>
+                    <dd class="admin__accordion-content" style="display:none;">
+                        <?php if (is_array($payloads)): ?>
+                            <?php foreach ($payloads as $idx => $payload): ?>
+                                <div style="margin:10px 0;">
+                                    <pre style="max-height: 400px; overflow:auto; background:#f8f8f8; border:1px solid #ddd; padding:12px;">
+                                        <?= $escaper->escapeHtml(is_array($payload) ? json_encode($payload, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES) : (string)$payload) ?>
+                                    </pre>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <pre style="max-height: 400px; overflow:auto; background:#f8f8f8; border:1px solid #ddd; padding:12px;">
+                                <?= $escaper->escapeHtml((string)$payloads) ?>
+                            </pre>
+                        <?php endif; ?>
+                    </dd>
+                <?php endforeach; ?>
+            </dl>
+        <?php endif; ?>
+    </div>
+</div>

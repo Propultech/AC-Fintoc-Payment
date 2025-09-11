@@ -77,7 +77,7 @@ class Fintoc extends Info
         // Amount and currency
         $amountStr = $this->formatAmountRow($order, $ai);
         if ($amountStr) {
-            $data[(string)__('Amount')] = $amountStr;
+            $data[(string)__('Amount')] = strip_tags($amountStr);
         }
 
         // Reference and dates

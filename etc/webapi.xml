@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!-- Copyright © Fintoc. -->
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Webapi:etc/webapi.xsd">
+
+    <!-- Create refund -->
+    <route url="/V1/fintoc/refunds" method="POST">
+        <service class="Fintoc\Payment\Api\RefundManagementInterface" method="createRefund"/>
+        <resources>
+            <resource ref="Fintoc_Refunds::create_refund"/>
+        </resources>
+    </route>
+
+    <!-- List refunds (via transactions repository) -->
+    <route url="/V1/fintoc/transactions" method="GET">
+        <service class="Fintoc\Payment\Api\TransactionRepositoryInterface" method="getList"/>
+        <resources>
+            <resource ref="Fintoc_Refunds::view_transactions"/>
+        </resources>
+    </route>
+</routes>

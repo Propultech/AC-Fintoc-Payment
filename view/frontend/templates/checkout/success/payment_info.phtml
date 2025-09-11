@@ -19,7 +19,7 @@ if (!$rows) {
         <?php foreach ($rows as $label => $value): ?>
             <tr>
                 <th scope="row"><?= $escaper->escapeHtml((string)$label); ?></th>
-                <td><?= $escaper->escapeHtml((string)$value); ?></td>
+                <td><?= /** @noEscape */ $value; ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

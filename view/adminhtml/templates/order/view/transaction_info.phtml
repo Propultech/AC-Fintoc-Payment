@@ -52,7 +52,7 @@ $transactions = $block->getTransactionHistory();
                                     </span>
                                 </td>
                                 <td class="col-amount">
-                                    <?= $escaper->escapeHtml($block->formatAmount($transaction->getAmount(), $transaction->getCurrency())) ?>
+                                    <?= /** @noEscape */$block->formatAmount($transaction->getAmount(), $transaction->getCurrency()) ?>
                                 </td>
                                 <td class="col-date">
                                     <?= $escaper->escapeHtml($block->formatDateTimeExact($transaction->getCreatedAt())) ?>

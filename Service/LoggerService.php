@@ -11,7 +11,6 @@ use Fintoc\Payment\Api\LoggerServiceInterface;
 use Fintoc\Payment\Logger\Logger;
 use Monolog\Logger as MonologLogger;
 use Psr\Log\LoggerInterface;
-use Stringable;
 
 /**
  * Service for logging messages
@@ -59,16 +58,25 @@ class LoggerService implements LoggerServiceInterface, LoggerInterface
     /**
      * Log a message with the given level
      *
-     * @param int $level The log level
-     * @param string|Stringable $message The message to log
+     * @param mixed $level The log level
+     * @param mixed $message The message to log (string, object implementing __toString, or any data)
      * @param array $context Additional context data
-     * @return void
      */
-    public function log($level, string|Stringable $message, array $context = []): void
+    public function log($level, $message, array $context = [])
     {
         // Skip logging if it's disabled or the level is below the configured level
         if (!$this->configService->isLoggingEnabled() || $level < $this->configService->getDebugLevel()) {
             return;
+        }
+
+        // Normalize message to string in a PHP 7.4-safe way
+        if (!is_string($message)) {
+            if (is_object($message) && method_exists($message, '__toString')) {
+                $message = (string)$message;
+            } else {
+                $encoded = @json_encode($message);
+                $message = $encoded !== false ? $encoded : '[unstringable message]';
+            }
         }
 
         // Filter sensitive data

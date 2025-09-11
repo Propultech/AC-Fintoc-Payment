@@ -79,14 +79,6 @@ class ConfigurationService implements ConfigurationServiceInterface
      */
     public function getConfig(string $path, string $scope = ScopeInterface::SCOPE_STORE, $scopeId = null)
     {
-        if ($scopeId === null) {
-            try {
-                $scopeId = $this->storeManager->getStore()->getId();
-            } catch (Exception $e) {
-                $scopeId = null;
-            }
-        }
-
         return $this->scopeConfig->getValue($path, $scope, $scopeId);
     }
 

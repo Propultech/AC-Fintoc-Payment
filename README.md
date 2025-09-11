@@ -213,3 +213,9 @@ Developer notes (routes):
 - Refund Create (GET): `fintoc_refunds/refund/create` (param `order_id`)
 - Refund Save (POST): `fintoc_refunds/refund/save` (form POST; requires form key)
 - Refund Cancel (POST): `fintoc_refunds/refund/cancel` (POST params `refund_id`, optional `order_id`, requires form key)
+
+---
+
+Additional resources
+- Fintoc Payment REST endpoints: README-REST-ENDPOINTS.md
+

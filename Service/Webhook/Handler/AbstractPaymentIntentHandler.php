@@ -11,8 +11,8 @@ use Magento\Sales\Model\Order;
 abstract class AbstractPaymentIntentHandler extends AbstractWebhookHandler
 {
     /**
-        Normalize PI fields from snake_case to camelCase for known keys.
-    */
+     * Normalize PI fields from snake_case to camelCase for known keys.
+     */
     protected function normalizePaymentIntent(array $pi): array
     {
         if (!isset($pi['paymentType']) && isset($pi['payment_type'])) {
@@ -38,12 +38,13 @@ abstract class AbstractPaymentIntentHandler extends AbstractWebhookHandler
      * Returns the transaction instance used.
      */
     protected function upsertAndAppendPiTransaction(
-        Order $order,
-        array $pi,
-        string $status,
+        Order        $order,
+        array        $pi,
+        string       $status,
         WebhookEvent $event,
-        array $extraMeta = []
-    ): TransactionInterface {
+        array        $extraMeta = []
+    ): TransactionInterface
+    {
         $existing = $this->getFirstTransactionByOrder($order->getIncrementId());
         if ($existing) {
             $meta = array_merge(['updated_by' => 'webhook'], $extraMeta);

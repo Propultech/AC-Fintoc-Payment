@@ -6,22 +6,17 @@ namespace Fintoc\Payment\Service\Webhook\Handler;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Sales\Model\OrderFactory;
-use Psr\Log\LoggerInterface;
 
 class PaymentIntentPendingHandler extends AbstractPaymentIntentHandler
 {
-    public function __construct(
-        OrderFactory $orderFactory,
-        LoggerInterface $logger,
-        \Fintoc\Payment\Api\TransactionServiceInterface $transactionService,
-        \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository,
-        Json $json
-    ) {
-        parent::__construct($orderFactory, $transactionService, $transactionRepository, $json, $logger, null);
-    }
-
+    /**
+     * Handles the incoming webhook event and processes the associated payment intent.
+     *
+     * @param WebhookEvent $event The webhook event containing the payment intent details to be processed.
+     * @return void
+     *
+     * @throws LocalizedException If the order ID is not found in the payment intent metadata.
+     */
     public function handle(WebhookEvent $event): void
     {
         $pi = $this->normalizePaymentIntent($event->getObject());

@@ -6,25 +6,17 @@ namespace Fintoc\Payment\Service\Webhook\Handler;
 use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
-use Psr\Log\LoggerInterface;
 
 class PaymentIntentFailedHandler extends AbstractPaymentIntentHandler
 {
-    public function __construct(
-        OrderFactory $orderFactory,
-        LoggerInterface $logger,
-        \Fintoc\Payment\Api\TransactionServiceInterface $transactionService,
-        \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository,
-        Json $json,
-        CartRepositoryInterface $cartRepository
-    ) {
-        parent::__construct($orderFactory, $transactionService, $transactionRepository, $json, $logger, $cartRepository);
-    }
-
+    /**
+     * Handles the webhook event for payment failures, updates order status, and logs the failure reason.
+     *
+     * @param WebhookEvent $event The webhook event containing payment details and associated metadata.
+     * @return void
+     * @throws LocalizedException If no order ID is found within the payment intent metadata.
+     */
     public function handle(WebhookEvent $event): void
     {
         $pi = $this->normalizePaymentIntent($event->getObject());
@@ -66,8 +58,6 @@ class PaymentIntentFailedHandler extends AbstractPaymentIntentHandler
             )
         );
         $order->save();
-
-        $this->restoreQuoteForOrder($order);
 
         $this->logger->info('Payment failed and order canceled', [
             'payment_id' => $pi['id'] ?? null,

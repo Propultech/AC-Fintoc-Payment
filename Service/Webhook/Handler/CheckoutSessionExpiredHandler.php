@@ -7,25 +7,21 @@ use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Service\Webhook\WebhookConstants;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
-use Magento\Sales\Model\OrderFactory;
-use Psr\Log\LoggerInterface;
 
 class CheckoutSessionExpiredHandler extends AbstractWebhookHandler
 {
-    public function __construct(
-        OrderFactory $orderFactory,
-        \Fintoc\Payment\Api\TransactionServiceInterface $transactionService,
-        \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository,
-        Json $json,
-        LoggerInterface $logger,
-        CartRepositoryInterface $cartRepository
-    ) {
-        parent::__construct($orderFactory, $transactionService, $transactionRepository, $json, $logger, $cartRepository);
-    }
-
+    /**
+     * Handles the given webhook event to process an expired checkout session.
+     *
+     * This method processes the webhook event, verifies the associated order,
+     * cancels it if necessary, updates the transaction information, and restores
+     * the related quote for retrying the checkout.
+     *
+     * @param WebhookEvent $event The webhook event that contains the data for the expired checkout session.
+     * @return void
+     * @throws LocalizedException If no order ID is found in the checkout session metadata.
+     */
     public function handle(WebhookEvent $event): void
     {
         $session = $event->getObject();

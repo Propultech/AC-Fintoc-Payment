@@ -38,13 +38,14 @@ abstract class AbstractWebhookHandler
      * @param CartRepositoryInterface|null $cartRepository
      */
     public function __construct(
-        OrderFactory $orderFactory,
-        TransactionServiceInterface $transactionService,
+        OrderFactory                   $orderFactory,
+        TransactionServiceInterface    $transactionService,
         TransactionRepositoryInterface $transactionRepository,
-        Json $json,
-        LoggerInterface $logger,
-        ?CartRepositoryInterface $cartRepository = null
-    ) {
+        Json                           $json,
+        LoggerInterface                $logger,
+        ?CartRepositoryInterface       $cartRepository = null
+    )
+    {
         $this->orderFactory = $orderFactory;
         $this->transactionService = $transactionService;
         $this->transactionRepository = $transactionRepository;
@@ -52,6 +53,7 @@ abstract class AbstractWebhookHandler
         $this->logger = $logger;
         $this->cartRepository = $cartRepository;
     }
+
 
     /**
      * @param array $object
@@ -142,16 +144,17 @@ abstract class AbstractWebhookHandler
      * Generic upsert + append for non-PI objects (e.g., checkout session)
      */
     protected function upsertAndAppendTransactionRaw(
-        Order $order,
-        string $externalId,
-        ?float $amount,
-        ?string $currency,
-        string $status,
+        Order        $order,
+        string       $externalId,
+        ?float       $amount,
+        ?string      $currency,
+        string       $status,
         WebhookEvent $event,
-        string $defaultType,
-        array $extraMeta = [],
-        ?array $payloadToStore = null
-    ): TransactionInterface {
+        string       $defaultType,
+        array        $extraMeta = [],
+        ?array       $payloadToStore = null
+    ): TransactionInterface
+    {
         $existing = $this->getFirstTransactionByOrder($order->getIncrementId());
         if ($existing) {
             $this->transactionService->updateTransactionStatus($existing, $status, array_merge(['updated_by' => 'webhook'], $extraMeta));

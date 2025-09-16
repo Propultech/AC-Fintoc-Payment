@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Fintoc\Payment\Service\Webhook\Handler;
 
 use Fintoc\Payment\Api\Data\TransactionInterface;
+use Fintoc\Payment\Api\TransactionRepositoryInterface;
+use Fintoc\Payment\Api\TransactionServiceInterface;
 use Fintoc\Payment\Service\Webhook\WebhookConstants;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
 use Magento\Framework\Exception\LocalizedException;
@@ -28,8 +30,8 @@ class RefundSucceededHandler extends AbstractWebhookHandler
      * @param OrderFactory $orderFactory
      * @param CreditmemoFactory $creditmemoFactory
      * @param CreditmemoManagementInterface $creditmemoManagement
-     * @param \Fintoc\Payment\Api\TransactionServiceInterface $transactionService
-     * @param \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository
+     * @param TransactionServiceInterface $transactionService
+     * @param TransactionRepositoryInterface $transactionRepository
      * @param Json $json
      * @param LoggerInterface $logger
      */
@@ -37,8 +39,8 @@ class RefundSucceededHandler extends AbstractWebhookHandler
         OrderFactory $orderFactory,
         CreditmemoFactory $creditmemoFactory,
         CreditmemoManagementInterface $creditmemoManagement,
-        \Fintoc\Payment\Api\TransactionServiceInterface $transactionService,
-        \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository,
+        TransactionServiceInterface $transactionService,
+        TransactionRepositoryInterface $transactionRepository,
         Json $json,
         LoggerInterface $logger
     ) {
@@ -48,9 +50,11 @@ class RefundSucceededHandler extends AbstractWebhookHandler
     }
 
     /**
-     * @param WebhookEvent $event
+     * Handles a webhook event for a refund succeeded.
+     *
+     * @param WebhookEvent $event The webhook event containing refund data.
      * @return void
-     * @throws LocalizedException
+     * @throws LocalizedException If no order ID is found in refund metadata or in case of processing errors.
      */
     public function handle(WebhookEvent $event): void
     {

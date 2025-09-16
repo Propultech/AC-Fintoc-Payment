@@ -16,6 +16,7 @@
     <!-- Refund Services -->
     <preference for="Fintoc\Payment\Api\RefundServiceInterface" type="Fintoc\Payment\Service\RefundService" />
     <preference for="Fintoc\Payment\Api\RefundsApiClientInterface" type="Fintoc\Payment\Service\RefundsApiClient" />
+    <preference for="Fintoc\Payment\Api\RefundManagementInterface" type="Fintoc\Payment\Service\RefundManagement" />
 
     <!-- Data Interfaces -->
     <preference for="Fintoc\Payment\Api\Data\TransactionInterface" type="Fintoc\Payment\Model\Transaction" />

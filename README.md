@@ -213,3 +213,30 @@ Developer notes (routes):
 - Refund Create (GET): `fintoc_refunds/refund/create` (param `order_id`)
 - Refund Save (POST): `fintoc_refunds/refund/save` (form POST; requires form key)
 - Refund Cancel (POST): `fintoc_refunds/refund/cancel` (POST params `refund_id`, optional `order_id`, requires form key)
+
+
+### Reporting issues
+
+Please use our GitHub Issue template to report problems with the Fintoc_Payment module so we can triage and fix them efficiently.
+
+How to create an issue:
+
+1. Open the repository in GitHub and go to the Issues tab.
+2. Click "New issue".
+3. Choose the template named "Fintoc_Payment: Bug report".
+4. Fill out the form completely, providing:
+    - Magento 2 version (required)
+    - Fintoc_Payment module version (required)
+    - A very detailed explanation of the issue (required)
+    - Steps to reproduce, expected vs. actual behavior (required)
+    - As much evidence as possible: screenshots, screen recordings, stack traces, full error logs (from var/log, webserver, browser console), API requests/responses (with secrets redacted), relevant configuration snippets, or a minimal reproducible example
+    - Environment details (PHP, DB engine and version, deployment type)
+5. Submit the issue.
+
+Our issue form is defined at .github/ISSUE_TEMPLATE/fintoc_payment_bug_report.yml.
+
+Notes:
+- Please search existing issues before opening a new one to avoid duplicates.
+- Do not include secrets or personal data in your report. Redact credentials, tokens, and customer information.
+- For security vulnerabilities, follow our security policy instead of opening a public issue (see SECURITY.md).
+

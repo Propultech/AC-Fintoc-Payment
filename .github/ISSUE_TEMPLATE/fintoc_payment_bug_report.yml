@@ -1,0 +1,132 @@
+name: "Fintoc_Payment: Bug report"
+description: "Report a problem with the Fintoc_Payment Magento 2 module. Please provide a detailed explanation and as much evidence as possible."
+title: "[Fintoc_Payment][Bug]: <short summary>"
+labels:
+  - bug
+  - Fintoc_Payment
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report an issue with the Fintoc_Payment module.
+        Please fill out all required fields. Issues missing critical information may be closed.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-checks
+      description: Please confirm the following before submitting.
+      options:
+        - label: I have searched existing issues to ensure this hasn't already been reported.
+          required: true
+        - label: I can reproduce this issue consistently.
+          required: false
+
+  - type: input
+    id: magento-version
+    attributes:
+      label: Magento 2 version
+      description: Provide the exact Magento 2 version (e.g., 2.4.7-p3). This is required.
+      placeholder: 2.4.x
+    validations:
+      required: true
+
+  - type: input
+    id: module-version
+    attributes:
+      label: Fintoc_Payment module version
+      description: The exact module version installed (from composer.json/composer.lock or bin/magento module:status).
+      placeholder: e.g., 1.2.3
+    validations:
+      required: true
+
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      placeholder: e.g., 8.2.16
+    validations:
+      required: false
+
+  - type: input
+    id: db-version
+    attributes:
+      label: Database engine and version
+      placeholder: e.g., MySQL 8.0.37 or MariaDB 10.6
+    validations:
+      required: false
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment type
+      options:
+        - On-premise
+        - Magento Cloud
+        - Docker / Containers
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Detailed explanation
+      description: |
+        Provide a clear, thorough description of the issue, what you were trying to do, and why it matters.
+        Include any relevant configuration, customizations, or third-party modules that may interact with Fintoc_Payment.
+      placeholder: Provide a detailed explanation here...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List precise steps so we can reproduce the issue locally.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: What actually happened? Include exact error messages when applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence (the more, the better)
+      description: |
+        Please include as much evidence as possible. You can drag-and-drop files into this field.
+        Helpful evidence includes:
+        - Screenshots/GIFs or screen recordings
+        - Stack traces and complete error logs (var/log, web server, browser console)
+        - API requests/responses (redact secrets)
+        - Configuration snippets (payment method settings, etc.)
+        - Minimal reproducible code/config (if applicable)
+      placeholder: Attach logs, screenshots, videos, etc. here (or paste inline; redact secrets).
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context about the problem (network, proxies, region, etc.).
+    validations:
+      required: false

@@ -1,0 +1,120 @@
+%% Fintoc_Payment — UML Class Diagram (Mermaid)
+classDiagram
+  %% Api
+  class Api_ConfigurationServiceInterface {<<interface>>}
+  class Api_LoggerServiceInterface {<<interface>>}
+  class Api_RefundServiceInterface {<<interface>>}
+  class Api_RefundsApiClientInterface {<<interface>>}
+  class Api_TransactionServiceInterface {<<interface>>}
+  class Api_TransactionRepositoryInterface {<<interface>>}
+  class Api_Data_TransactionInterface {<<interface>>}
+  class Api_Data_TransactionSearchResultsInterface {<<interface>>}
+  class Api_Webhook_WebhookRequestValidatorInterface {<<interface>>}
+  class Api_Webhook_WebhookRequestParserInterface {<<interface>>}
+  class Api_Webhook_WebhookIdempotencyServiceInterface {<<interface>>}
+  class Api_Webhook_WebhookRouterInterface {<<interface>>}
+  class Api_Webhook_WebhookHandlerInterface {<<interface>>}
+
+  %% Model
+  class Model_Payment {
+    +canUseForCurrency()
+    +isAvailable()
+  }
+  class Model_Transaction
+  class Model_TransactionSearchResults
+  class Model_TransactionRepository
+  class Model_ResourceModel_Transaction
+  class Model_ResourceModel_Transaction_Collection
+  class Model_Ui_ConfigProvider
+
+  %% Service
+  class Service_ConfigurationService
+  class Service_LoggerService
+  class Service_RefundsApiClient
+  class Service_RefundService
+  class Service_TransactionService {
+    +createPreAuthorizationTransaction()
+    +createPostAuthorizationTransaction()
+    +createCaptureTransaction()
+    +createRefundTransaction()
+    +createVoidTransaction()
+    +createWebhookTransaction()
+    +appendWebhookData()
+  }
+  class Service_Webhook_WebhookEvent
+  class Service_Webhook_WebhookRequestValidator
+  class Service_Webhook_WebhookRequestParser
+  class Service_Webhook_WebhookIdempotencyService
+  class Service_Webhook_WebhookRouter
+  class Service_Webhook_AbstractWebhookHandler
+  class Service_Webhook_AbstractPaymentIntentHandler
+  class Service_Webhook_PaymentIntentSucceededHandler
+  class Service_Webhook_PaymentIntentFailedHandler
+  class Service_Webhook_PaymentIntentPendingHandler
+  class Service_Webhook_CheckoutSessionFinishedHandler
+  class Service_Webhook_CheckoutSessionExpiredHandler
+  class Service_Webhook_RefundSucceededHandler
+  class Service_Webhook_RefundFailedHandler
+  class Service_Webhook_RefundInProgressHandler
+
+  %% Controller
+  class Controller_Checkout_Create
+  class Controller_Checkout_Commit
+  class Controller_Webhook_Index
+
+  %% Logger
+  class Logger_Logger
+  class Logger_Handler
+
+  %% Block (selected)
+  class Block_Info_Fintoc
+  class Block_Admin_Order_View_TransactionInfo
+
+  %% Interfaces to implementations
+  Api_ConfigurationServiceInterface <|.. Service_ConfigurationService
+  Api_LoggerServiceInterface <|.. Service_LoggerService
+  Api_RefundsApiClientInterface <|.. Service_RefundsApiClient
+  Api_RefundServiceInterface <|.. Service_RefundService
+  Api_TransactionServiceInterface <|.. Service_TransactionService
+  Api_TransactionRepositoryInterface <|.. Model_TransactionRepository
+  Api_Data_TransactionInterface <|.. Model_Transaction
+  Api_Data_TransactionSearchResultsInterface <|.. Model_TransactionSearchResults
+
+  Api_Webhook_WebhookRequestValidatorInterface <|.. Service_Webhook_WebhookRequestValidator
+  Api_Webhook_WebhookRequestParserInterface <|.. Service_Webhook_WebhookRequestParser
+  Api_Webhook_WebhookIdempotencyServiceInterface <|.. Service_Webhook_WebhookIdempotencyService
+  Api_Webhook_WebhookRouterInterface <|.. Service_Webhook_WebhookRouter
+  Api_Webhook_WebhookHandlerInterface <|.. Service_Webhook_AbstractWebhookHandler
+
+  %% Inheritance among webhook handlers
+  Service_Webhook_AbstractWebhookHandler <|-- Service_Webhook_AbstractPaymentIntentHandler
+  Service_Webhook_AbstractPaymentIntentHandler <|-- Service_Webhook_PaymentIntentSucceededHandler
+  Service_Webhook_AbstractPaymentIntentHandler <|-- Service_Webhook_PaymentIntentFailedHandler
+  Service_Webhook_AbstractPaymentIntentHandler <|-- Service_Webhook_PaymentIntentPendingHandler
+  Service_Webhook_AbstractWebhookHandler <|-- Service_Webhook_CheckoutSessionFinishedHandler
+  Service_Webhook_AbstractWebhookHandler <|-- Service_Webhook_CheckoutSessionExpiredHandler
+  Service_Webhook_AbstractWebhookHandler <|-- Service_Webhook_RefundSucceededHandler
+  Service_Webhook_AbstractWebhookHandler <|-- Service_Webhook_RefundFailedHandler
+  Service_Webhook_AbstractWebhookHandler <|-- Service_Webhook_RefundInProgressHandler
+
+  %% Associations
+  Controller_Webhook_Index --> Service_Webhook_WebhookRequestValidator : uses
+  Controller_Webhook_Index --> Service_Webhook_WebhookRequestParser : uses
+  Controller_Webhook_Index --> Service_Webhook_WebhookIdempotencyService : uses
+  Controller_Webhook_Index --> Service_Webhook_WebhookRouter : dispatches
+  Controller_Webhook_Index --> Service_TransactionService : uses
+  Controller_Checkout_Create --> Service_ConfigurationService : uses
+  Controller_Checkout_Create --> Logger_Logger : logs
+  Controller_Checkout_Commit --> Logger_Logger : logs
+
+  Model_TransactionRepository --> Model_ResourceModel_Transaction : persists
+  Model_TransactionRepository --> Model_ResourceModel_Transaction_Collection : queries
+  Service_TransactionService --> Api_TransactionRepositoryInterface : uses
+  Service_RefundService --> Service_RefundsApiClient : calls
+  Logger_Logger o-- Logger_Handler
+
+  Model_Payment --> Api_ConfigurationServiceInterface : reads config
+  Model_Ui_ConfigProvider --> Api_ConfigurationServiceInterface : reads config
+
+  Block_Info_Fintoc --> Model_TransactionRepository : reads
+  Block_Admin_Order_View_TransactionInfo --> Model_TransactionRepository : reads

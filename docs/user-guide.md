@@ -19,13 +19,15 @@ Installation (if not preinstalled)
 
 Configuration
 1) Log in to Magento Admin.
-2) Go to Stores → Configuration → Sales → Payment Methods → Fintoc Redirect.
-   - [PLACEHOLDER FOR SCREENSHOT — admin-navigation-to-payment-methods]
+2) Go to Stores → Configuration → Sales → Payment Methods → Fintoc.
+   ![Admin navigation to payment methods](images/admin-navigation.png)
+   ![Fintoc Basic Settings](images/admin-navigation-2.png)
 3) In the Basic Settings group, enter your Fintoc credentials:
-   - Secret API Key.
+   - Secret API Key. [Get your secret key here](https://dashboard.fintoc.com/api-keys)
    - Webhook Secret.
    - Optional: Enable Logging, Debug Mode, set Debug Level, and toggle Log Sensitive Data.
-   - [PLACEHOLDER FOR SCREENSHOT — fintoc-basic-settings]
+   [![Fintoc Get Secret Key](images/get-secret-key.png)](https://docs.fintoc.com/docs/api-keys)
+   ![Fintoc Basic Settings](images/fintoc-basic-settings.png)
 4) In the Payment Initiation group, set:
    - Enabled = Yes.
    - Title = the name shown to customers (e.g., "Pay with Fintoc").
@@ -34,13 +36,13 @@ Configuration
    - Applicable Countries and Specific Countries (if restricting availability).
    - Maximum Order Amount (leave blank for no limit).
    - Sort Order (display order in checkout).
-   - [PLACEHOLDER FOR SCREENSHOT — fintoc-payment-initiation]
+   ![Payment Initiation Configuration](images/fintoc-payment-initiation.png)
 5) In the Refunds group (optional), configure:
    - Enable Refunds and Allow Partial Refunds.
    - Auto-create Credit Memo on Refund Succeeded.
    - Set order status transitions for refund pending/succeeded/failed/canceled.
    - Select refundable order statuses.
-   - [PLACEHOLDER FOR SCREENSHOT — fintoc-refunds-settings]
+   ![Refunds Settings](images/fintoc-refunds-settings.png)
 6) Save Config and clear caches if prompted.
 
 Webhook setup
@@ -49,29 +51,30 @@ Webhook setup
    - Method: POST
 2) Copy the Webhook Secret from Fintoc and paste it into Magento (Stores → Configuration → Sales → Payment Methods → Fintoc → Basic Settings → Webhook Secret).
 3) Test delivery from Fintoc and confirm Magento responds with 200 OK.
-   - [PLACEHOLDER FOR SCREENSHOT — fintoc-dashboard-webhook]
+   ![Webhook setup](images/fintoc-get-webhook-secret.png)
 
 Customer checkout experience
 1) Customer adds items to cart and proceeds to checkout.
 2) On the Payment Method step, the customer selects Fintoc and clicks Place Order.
-   - [PLACEHOLDER FOR SCREENSHOT — checkout-select-fintoc]
+    ![Payment Method step](images/checkout-select-fintoc.png)
 3) The customer is redirected to Fintoc to complete the payment.
-   - [PLACEHOLDER FOR SCREENSHOT — fintoc-redirect-page]
+   ![The customer is redirected to Fintoc](images/fintoc-redirect-page.png)
 4) After completion, the customer returns to your store and sees the Order Success page.
-   - [PLACEHOLDER FOR SCREENSHOT — order-success-page]
+    ![Order Success page](images/order-success-page.png)
 
 Viewing transactions (Admin)
 1) Go to Sales → Fintoc → Transactions.
 2) Use filters to find a specific order or transaction.
 3) Click into a transaction to view details and webhook history.
-   - [PLACEHOLDER FOR SCREENSHOT — admin-transactions-grid]
-   - [PLACEHOLDER FOR SCREENSHOT — admin-transaction-view]
+    ![transaction grid path](images/admin-transactions-grid.png)
+    ![transaction grid](images/admin-transactions-grid-2.png)
+    ![transaction view](images/admin-transactions-view.png)
 
 Refunds (Admin)
 - From Sales → Fintoc → Refundable Orders, open a refund form for an order and submit.
 - Alternatively, use the standard Magento Credit Memo flow if enabled by your configuration.
-  - [PLACEHOLDER FOR SCREENSHOT — admin-refundable-orders-grid]
-  - [PLACEHOLDER FOR SCREENSHOT — admin-refund-create]
+    ![Refundable Orders Grid](images/admin-refundable-orders-grid.png)
+    ![Create Refund](images/admin-refund-create.png)
 
 Tips and best practices
 - Keep logging enabled in production at a reasonable Debug Level. Avoid logging sensitive data unless requested by support.
@@ -80,6 +83,7 @@ Tips and best practices
 
 Troubleshooting
 - Webhook errors (401/400): Re-check the Webhook Secret and ensure Fintoc sends the correct signature header.
+- Webhook errors (5xx): check the logs in var/log/fintoc.log.
 - Payment method not visible: Ensure it is enabled, not exceeding Max Order Amount, and allowed for the current country.
 - Refund not reflected: Confirm Refunds are enabled and that the webhook events for refund were delivered.
 

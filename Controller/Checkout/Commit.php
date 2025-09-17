@@ -87,7 +87,8 @@ class Commit extends Action
         TransactionRepositoryInterface $transactionRepository,
         LoggerInterface                $logger,
         CheckoutSession                $checkoutSession
-    ) {
+    )
+    {
         parent::__construct($context);
         $this->resultRedirectFactory = $resultRedirectFactory;
         $this->messageManager = $messageManager;
@@ -123,7 +124,7 @@ class Commit extends Action
             try {
                 $transactionId = $this->encryptor->decrypt($encryptedTransactionId);
             } catch (Exception $e) {
-                $this->logger->error('Error decrypting transaction ID: ' . $e->getMessage(), ['exception' => $e]);
+                $this->logger->error('Commit: Error decrypting transaction ID: ' . $e->getMessage(), ['exception' => $e]);
                 throw new LocalizedException(__('Invalid transaction ID'));
             }
 
@@ -131,7 +132,7 @@ class Commit extends Action
             try {
                 $transaction = $this->transactionRepository->getByTransactionId($transactionId);
             } catch (Exception $e) {
-                $this->logger->error('Error retrieving transaction: ' . $e->getMessage(), ['exception' => $e]);
+                $this->logger->error('Commit: Error retrieving transaction: ' . $e->getMessage(), ['exception' => $e]);
                 throw new LocalizedException(__('Transaction not found'));
             }
 
@@ -153,12 +154,12 @@ class Commit extends Action
             }
 
         } catch (Exception $e) {
-            $this->logger->error('Error processing Fintoc callback: ' . $e->getMessage(), ['exception' => $e]);
+            $this->logger->error('Commit: Error processing Fintoc callback: ' . $e->getMessage(), ['exception' => $e]);
             $this->messageManager->addErrorMessage($e->getMessage());
             try {
                 $this->checkoutSession->restoreQuote();
             } catch (Exception $e2) {
-                $this->logger->debug('Restore quote failed: ' . $e2->getMessage());
+                $this->logger->debug('Commit: Restore quote failed: ' . $e2->getMessage());
             }
             return $resultRedirect->setPath('checkout/cart');
         }
@@ -214,7 +215,7 @@ class Commit extends Action
                     }
                 }
             } catch (Exception $e) {
-                $this->logger->error('Error processing response data: ' . $e->getMessage());
+                $this->logger->error('Commit: Error processing response data: ' . $e->getMessage());
             }
         }
 
@@ -223,7 +224,7 @@ class Commit extends Action
 
         // Log the success
         $this->logger->info(
-            'Fintoc payment successful',
+            'Commit: Fintoc payment successful',
             [
                 'transaction_id' => $transaction->getTransactionId(),
                 'order_id' => $order->getIncrementId()
@@ -261,7 +262,7 @@ class Commit extends Action
 
         // Cancel the order if it's not already canceled
         if ($order->getState() !== Order::STATE_CANCELED) {
-            $order->cancel();
+            /*$order->cancel();*/
             $order->addCommentToStatusHistory(
                 __(
                     'Fintoc payment canceled by customer. Transaction ID: %1, Amount: %2 %3',
@@ -283,10 +284,18 @@ class Commit extends Action
 
         // Log the cancellation
         $this->logger->info(
-            'Fintoc payment canceled',
+            'Commit: Fintoc payment canceled',
             [
                 'transaction_id' => $transaction->getTransactionId(),
-                'order_id' => $order->getIncrementId()
+                'order_id' => $order->getIncrementId(),
+            ]
+        );
+        $this->logger->debug(
+            'Commit: Fintoc payment canceled',
+            [
+                'transaction_id' => $transaction->getTransactionId(),
+                'order_id' => $order->getIncrementId(),
+                'request' => $this->getRequest()->getParams(),
             ]
         );
 
@@ -297,7 +306,7 @@ class Commit extends Action
         try {
             $this->checkoutSession->restoreQuote();
         } catch (Exception $e) {
-            $this->logger->debug('Restore quote failed on cancel: ' . $e->getMessage());
+            $this->logger->debug('Commit: Restore quote failed on cancel: ' . $e->getMessage());
         }
 
         // Redirect to failure page

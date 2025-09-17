@@ -3,37 +3,18 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Service\Webhook\Handler;
 
-use Fintoc\Payment\Api\Data\TransactionInterface;
 use Fintoc\Payment\Service\Webhook\WebhookConstants;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Serialize\Serializer\Json;
-use Magento\Sales\Model\OrderFactory;
-use Psr\Log\LoggerInterface;
 
 class RefundInProgressHandler extends AbstractWebhookHandler
 {
     /**
-     * @param OrderFactory $orderFactory
-     * @param \Fintoc\Payment\Api\TransactionServiceInterface $transactionService
-     * @param \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository
-     * @param Json $json
-     * @param LoggerInterface $logger
-     */
-    public function __construct(
-        OrderFactory $orderFactory,
-        \Fintoc\Payment\Api\TransactionServiceInterface $transactionService,
-        \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository,
-        Json $json,
-        LoggerInterface $logger
-    ) {
-        parent::__construct($orderFactory, $transactionService, $transactionRepository, $json, $logger, null);
-    }
-
-    /**
-     * @param WebhookEvent $event
+     * Handles the webhook event for a refund in progress and updates the associated order accordingly.
+     *
+     * @param WebhookEvent $event The webhook event containing refund details.
      * @return void
-     * @throws LocalizedException
+     * @throws LocalizedException If the refund metadata does not contain a valid order ID.
      */
     public function handle(WebhookEvent $event): void
     {

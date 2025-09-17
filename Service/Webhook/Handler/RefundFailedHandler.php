@@ -13,27 +13,15 @@ use Psr\Log\LoggerInterface;
 
 class RefundFailedHandler extends AbstractWebhookHandler
 {
-    /**
-     * @param OrderFactory $orderFactory
-     * @param \Fintoc\Payment\Api\TransactionServiceInterface $transactionService
-     * @param \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository
-     * @param Json $json
-     * @param LoggerInterface $logger
-     */
-    public function __construct(
-        OrderFactory $orderFactory,
-        \Fintoc\Payment\Api\TransactionServiceInterface $transactionService,
-        \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository,
-        Json $json,
-        LoggerInterface $logger
-    ) {
-        parent::__construct($orderFactory, $transactionService, $transactionRepository, $json, $logger, null);
-    }
 
     /**
-     * @param WebhookEvent $event
+     * Handles a webhook event for a refund failure, updating the transaction status,
+     * appending webhook payloads, and adding a comment to the order's status history.
+     *
+     * @param WebhookEvent $event The event object containing the refund data and metadata.
      * @return void
-     * @throws LocalizedException
+     *
+     * @throws LocalizedException If no order ID is found in the refund metadata.
      */
     public function handle(WebhookEvent $event): void
     {

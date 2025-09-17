@@ -1,0 +1,154 @@
+@startuml
+' Fintoc_Payment — UML Class Diagram (PlantUML)
+skinparam packageStyle rect
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+package "Fintoc\\Payment" {
+  package Api {
+    interface ConfigurationServiceInterface
+    interface LoggerServiceInterface
+    interface RefundServiceInterface
+    interface RefundsApiClientInterface
+    interface TransactionServiceInterface
+    interface TransactionRepositoryInterface
+    package Data {
+      interface TransactionInterface
+      interface TransactionSearchResultsInterface
+    }
+    package Webhook {
+      interface WebhookRequestValidatorInterface
+      interface WebhookRequestParserInterface
+      interface WebhookIdempotencyServiceInterface
+      interface WebhookRouterInterface
+      interface WebhookHandlerInterface
+    }
+  }
+
+  package Model {
+    class Payment extends Magento\Payment\Model\Method\AbstractMethod
+    class Transaction implements Api.Data.TransactionInterface
+    class TransactionSearchResults implements Api.Data.TransactionSearchResultsInterface
+    class TransactionRepository implements Api.TransactionRepositoryInterface
+    package ResourceModel {
+      class Transaction
+      class Transaction_Collection
+    }
+    package Ui {
+      class ConfigProvider
+    }
+  }
+
+  package Service {
+    class ConfigurationService implements Api.ConfigurationServiceInterface
+    class LoggerService implements Api.LoggerServiceInterface
+    class RefundsApiClient implements Api.RefundsApiClientInterface
+    class RefundService implements Api.RefundServiceInterface
+    class TransactionService implements Api.TransactionServiceInterface
+    package Webhook {
+      class WebhookEvent
+      class WebhookRequestValidator implements Api.Webhook.WebhookRequestValidatorInterface
+      class WebhookRequestParser implements Api.Webhook.WebhookRequestParserInterface
+      class WebhookIdempotencyService implements Api.Webhook.WebhookIdempotencyServiceInterface
+      class WebhookRouter implements Api.Webhook.WebhookRouterInterface
+      abstract class AbstractWebhookHandler implements Api.Webhook.WebhookHandlerInterface
+      abstract class AbstractPaymentIntentHandler extends AbstractWebhookHandler
+      class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
+      class PaymentIntentFailedHandler extends AbstractPaymentIntentHandler
+      class PaymentIntentPendingHandler extends AbstractPaymentIntentHandler
+      class CheckoutSessionFinishedHandler extends AbstractWebhookHandler
+      class CheckoutSessionExpiredHandler extends AbstractWebhookHandler
+      class RefundSucceededHandler extends AbstractWebhookHandler
+      class RefundFailedHandler extends AbstractWebhookHandler
+      class RefundInProgressHandler extends AbstractWebhookHandler
+    }
+  }
+
+  package Controller {
+    package Checkout {
+      class Create
+      class Commit
+    }
+    package Webhook {
+      class Index
+    }
+    package Adminhtml {
+      class Orders_Index
+      class Refund_Create
+      class Refund_Save
+      class Refund_Cancel
+      class Transactions_Index
+      class Transactions_View
+    }
+  }
+
+  package Logger {
+    class Logger
+    class Handler
+  }
+
+  package Block {
+    package Info { class Fintoc }
+    package Checkout { class Success }
+    package Adminhtml {
+      package Order.View { class TransactionInfo }
+      package Transactions.View { class Content <<UI>> }
+    }
+  }
+
+  package Utils { class WebhookSignature }
+}
+
+' Relationships (selected)
+Api.ConfigurationServiceInterface <|.. Service.ConfigurationService
+Api.LoggerServiceInterface <|.. Service.LoggerService
+Api.RefundsApiClientInterface <|.. Service.RefundsApiClient
+Api.RefundServiceInterface <|.. Service.RefundService
+Api.TransactionServiceInterface <|.. Service.TransactionService
+Api.TransactionRepositoryInterface <|.. Model.TransactionRepository
+Api.Data.TransactionInterface <|.. Model.Transaction
+Api.Data.TransactionSearchResultsInterface <|.. Model.TransactionSearchResults
+
+Api.Webhook.WebhookRequestValidatorInterface <|.. Service.Webhook.WebhookRequestValidator
+Api.Webhook.WebhookRequestParserInterface <|.. Service.Webhook.WebhookRequestParser
+Api.Webhook.WebhookIdempotencyServiceInterface <|.. Service.Webhook.WebhookIdempotencyService
+Api.Webhook.WebhookRouterInterface <|.. Service.Webhook.WebhookRouter
+Api.Webhook.WebhookHandlerInterface <|.. Service.Webhook.AbstractWebhookHandler
+Service.Webhook.AbstractWebhookHandler <|-- Service.Webhook.AbstractPaymentIntentHandler
+Service.Webhook.AbstractPaymentIntentHandler <|-- Service.Webhook.PaymentIntentSucceededHandler
+Service.Webhook.AbstractPaymentIntentHandler <|-- Service.Webhook.PaymentIntentFailedHandler
+Service.Webhook.AbstractPaymentIntentHandler <|-- Service.Webhook.PaymentIntentPendingHandler
+Service.Webhook.AbstractWebhookHandler <|-- Service.Webhook.CheckoutSessionFinishedHandler
+Service.Webhook.AbstractWebhookHandler <|-- Service.Webhook.CheckoutSessionExpiredHandler
+Service.Webhook.AbstractWebhookHandler <|-- Service.Webhook.RefundSucceededHandler
+Service.Webhook.AbstractWebhookHandler <|-- Service.Webhook.RefundFailedHandler
+Service.Webhook.AbstractWebhookHandler <|-- Service.Webhook.RefundInProgressHandler
+
+Controller.Webhook.Index --> Service.Webhook.WebhookRequestValidator : uses
+Controller.Webhook.Index --> Service.Webhook.WebhookRequestParser : uses
+Controller.Webhook.Index --> Service.Webhook.WebhookIdempotencyService : uses
+Controller.Webhook.Index --> Service.Webhook.WebhookRouter : dispatches to
+Controller.Webhook.Index --> Service.TransactionService : uses
+Controller.Webhook.Index --> Api.ConfigurationServiceInterface : uses
+
+Controller.Checkout.Create --> Service.ConfigurationService : uses
+Controller.Checkout.Create --> Logger.Logger : logs
+Controller.Checkout.Commit --> Logger.Logger : logs
+
+Model.TransactionRepository --> Model.ResourceModel.Transaction : persists
+Model.TransactionRepository --> Model.ResourceModel.Transaction_Collection : queries
+Service.TransactionService --> Api.TransactionRepositoryInterface : uses
+Service.RefundService --> Service.RefundsApiClient : calls
+Service.RefundService --> Logger.Logger : logs
+Service.Webhook.WebhookRouter --> Service.Webhook.AbstractWebhookHandler : contains *
+Service.Webhook.WebhookRequestValidator --> Utils.WebhookSignature : validates
+
+Model.Payment --|> Magento\Payment\Model\Method\AbstractMethod
+Model.Payment --> Api.ConfigurationServiceInterface : reads config
+Model.Ui.ConfigProvider --> Api.ConfigurationServiceInterface : reads config
+
+Block.Info.Fintoc --> Model.TransactionRepository : reads
+Block.Adminhtml.Order.View.TransactionInfo --> Model.TransactionRepository : reads
+
+Logger.Logger o--> Logger.Handler
+@enduml

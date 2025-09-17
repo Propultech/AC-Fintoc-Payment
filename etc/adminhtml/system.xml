@@ -6,7 +6,7 @@
             <group id="fintoc_payment" translate="label" type="text" sortOrder="100" showInDefault="1"
                    showInWebsite="1" showInStore="1">
                 <label>Fintoc</label>
-                <comment><![CDATA[<img alt="Fintoc Logo" src="https://assets.fintoc.com/?img_name=button_cl_light_trailing"/> For more information, see the <a href="https://docs.fintoc.com/docs/magento" target="_blank">documentation</a>]]></comment>
+                <comment><![CDATA[<img alt="Fintoc Logo" src="https://assets.fintoc.com/?img_name=button_cl_light_trailing"/> Get more information <a href="https://docs.fintoc.com/docs/magento" target="_blank">here</a>]]></comment>
                 <include path="Fintoc_Payment::config/settings.xml"/>
                 <include path="Fintoc_Payment::config/payment_methods/redirect.xml"/>
                 <include path="Fintoc_Payment::config/refunds.xml"/>

@@ -8,7 +8,7 @@
                showInWebsite="1" showInStore="0" canRestore="1">
             <label>Secret API Key</label>
             <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
-            <comment><![CDATA[For more information, see the <a href="https://docs.fintoc.com/docs/api-keys" target="_blank">documentation</a>.]]></comment>
+            <comment><![CDATA[See how to get your Secret key <a href="https://docs.fintoc.com/docs/api-keys" target="_blank">here</a>.]]></comment>
             <config_path>payment/fintoc_payment/api_secret</config_path>
         </field>
         <field id="webhook_secret" translate="label" type="obscure" sortOrder="40" showInDefault="1"

@@ -5,6 +5,8 @@ namespace Fintoc\Payment\Service\Webhook\Handler;
 
 use Exception;
 use Fintoc\Payment\Api\Data\TransactionInterface;
+use Fintoc\Payment\Api\TransactionRepositoryInterface;
+use Fintoc\Payment\Api\TransactionServiceInterface;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
@@ -22,13 +24,23 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
     private $dbTransaction;
     private $invoiceSender;
 
+    /**
+     * @param OrderFactory $orderFactory
+     * @param InvoiceService $invoiceService
+     * @param DbTransaction $dbTransaction
+     * @param InvoiceSender $invoiceSender
+     * @param TransactionServiceInterface $transactionService
+     * @param TransactionRepositoryInterface $transactionRepository
+     * @param Json $json
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         OrderFactory $orderFactory,
         InvoiceService $invoiceService,
         DbTransaction $dbTransaction,
         InvoiceSender $invoiceSender,
-        \Fintoc\Payment\Api\TransactionServiceInterface $transactionService,
-        \Fintoc\Payment\Api\TransactionRepositoryInterface $transactionRepository,
+        TransactionServiceInterface $transactionService,
+        TransactionRepositoryInterface $transactionRepository,
         Json $json,
         LoggerInterface $logger
     ) {
@@ -38,6 +50,15 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
         $this->invoiceSender = $invoiceSender;
     }
 
+    /**
+     * Handles the webhook event for a payment intent and processes the associated order.
+     *
+     * @param WebhookEvent $event The webhook event containing payment intent information to process.
+     *
+     * @return void
+     *
+     * @throws LocalizedException If no order ID is found in payment intent metadata or other order processing exceptions occur.
+     */
     public function handle(WebhookEvent $event): void
     {
         $pi = $this->normalizePaymentIntent($event->getObject());

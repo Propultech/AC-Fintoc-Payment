@@ -262,7 +262,7 @@ class Commit extends Action
 
         // Cancel the order if it's not already canceled
         if ($order->getState() !== Order::STATE_CANCELED) {
-            /*$order->cancel();*/
+            $order->cancel();
             $order->addCommentToStatusHistory(
                 __(
                     'Fintoc payment canceled by customer. Transaction ID: %1, Amount: %2 %3',

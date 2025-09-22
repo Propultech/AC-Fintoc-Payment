@@ -78,7 +78,7 @@
 "Fintoc payment successful. Transaction ID: %1, Amount: %2 %3","Pago de Fintoc exitoso. ID de transacción: %1, Monto: %2 %3"
 "Your payment was successful.","Tu pago se realizó con éxito."
 "Fintoc payment canceled by customer. Transaction ID: %1, Amount: %2 %3","Pago de Fintoc cancelado por el cliente. ID de transacción: %1, Monto: %2 %3"
-"Your payment was canceled.","Tu pago fue cancelado."
+"Your payment was canceled.","No se ha completado el pago, intenta nuevamente."
 "No order found","No se encontró ningún pedido"
 "Fintoc payment initiated. Transaction ID: %1, Amount: %2 %3","Pago de Fintoc iniciado. ID de transacción: %1, Monto: %2 %3"
 "Fintoc payment failed. Transaction ID: %1, Error: %2","Pago de Fintoc falló. ID de transacción: %1, Error: %2"

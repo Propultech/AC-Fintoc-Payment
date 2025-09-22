@@ -8,6 +8,8 @@ use Fintoc\Payment\Api\RefundsApiClientInterface;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Log\LoggerInterface;
+use Fintoc\Payment\Service\ConfigurationService;
+use Fintoc\Payment\Utils\AmountUtils;
 
 /**
  * HTTP client for Fintoc Refunds API.
@@ -43,7 +45,7 @@ class RefundsApiClient implements RefundsApiClientInterface
      */
     public function createRefund(string $paymentIntentId, ?float $amount, string $currency, array $metadata = []): array
     {
-        $baseUrl = rtrim((string)$this->configService->getConfig('payment/fintoc_payment/api_base_url') ?: 'https://api.fintoc.com', '/');
+        $baseUrl = rtrim((string)$this->configService->getConfig('payment/fintoc_payment/api_base_url') ?: ConfigurationService::DEFAULT_API_BASE_URL, '/');
         $path = (string)$this->configService->getConfig('payment/fintoc_payment/refunds_create_path') ?: '/v1/refunds';
         $url = $baseUrl . $path;
 
@@ -56,7 +58,7 @@ class RefundsApiClient implements RefundsApiClientInterface
             'resource_id' => $paymentIntentId,
         ];
         if ($amount !== null) {
-            $payload['amount'] = $amount;
+            $payload['amount'] = AmountUtils::roundToIntHalfUp((float)$amount);
         }
         if (!empty($normalizedMeta)) {
             $payload['metadata'] = $normalizedMeta;
@@ -112,7 +114,7 @@ class RefundsApiClient implements RefundsApiClientInterface
      */
     public function cancelRefund(string $externalRefundId): array
     {
-        $baseUrl = rtrim((string)$this->configService->getConfig('payment/fintoc_payment/api_base_url') ?: 'https://api.fintoc.com', '/');
+        $baseUrl = rtrim((string)$this->configService->getConfig('payment/fintoc_payment/api_base_url') ?: ConfigurationService::DEFAULT_API_BASE_URL, '/');
         $cancelPathTmpl = (string)$this->configService->getConfig('payment/fintoc_payment/refunds_cancel_path') ?: '/v1/refunds/{id}/cancel';
         $path = str_replace('{id}', rawurlencode($externalRefundId), $cancelPathTmpl);
         $url = $baseUrl . $path;

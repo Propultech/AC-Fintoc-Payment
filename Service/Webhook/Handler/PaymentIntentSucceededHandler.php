@@ -17,12 +17,26 @@ use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Service\InvoiceService;
 use Magento\Framework\DB\Transaction as DbTransaction;
 use Psr\Log\LoggerInterface;
+use Fintoc\Payment\Api\RefundServiceInterface;
 
 class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
 {
+    /**
+     * @var InvoiceService
+     */
     private $invoiceService;
+    /**
+     * @var DbTransaction
+     */
     private $dbTransaction;
+    /**
+     * @var InvoiceSender
+     */
     private $invoiceSender;
+    /**
+     * @var RefundServiceInterface
+     */
+    private $refundService;
 
     /**
      * @param OrderFactory $orderFactory
@@ -39,6 +53,7 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
         InvoiceService $invoiceService,
         DbTransaction $dbTransaction,
         InvoiceSender $invoiceSender,
+        RefundServiceInterface $refundService,
         TransactionServiceInterface $transactionService,
         TransactionRepositoryInterface $transactionRepository,
         Json $json,
@@ -48,6 +63,7 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
         $this->invoiceService = $invoiceService;
         $this->dbTransaction = $dbTransaction;
         $this->invoiceSender = $invoiceSender;
+        $this->refundService = $refundService;
     }
 
     /**
@@ -67,6 +83,39 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
             throw new LocalizedException(__('No order ID found in payment intent metadata:  ' . $this->json->serialize($pi['metadata'] ?? '')));
         }
         $order = $this->loadOrderOrFail($orderId);
+
+        // If order is already canceled, automatically request a refund and record action
+        if ($order->getState() === Order::STATE_CANCELED) {
+            // Record transaction success payload without invoicing
+            $this->upsertAndAppendPiTransaction($order, $pi, TransactionInterface::STATUS_SUCCESS, $event, [
+                'error_message' => null,
+                'reference' => $pi['referenceId'] ?? null,
+            ]);
+
+            $order->addCommentToStatusHistory(__('Fintoc payment succeeded but order is canceled. Requesting automatic refund.'));
+            try {
+                $refundTx = $this->refundService->requestRefund($order, null, (string)($pi['currency'] ?? $order->getOrderCurrencyCode()), [
+                    'mode' => 'full',
+                    'comment' => __('Automatic refund requested due to succeeded webhook on canceled order'),
+                    'payment_intent_id' => (string)($pi['id'] ?? '')
+                ]);
+                $order->addCommentToStatusHistory(__('Fintoc automatic refund requested. Refund ID: %1', $refundTx->getTransactionId()));
+                $this->logger->info('Automatic refund requested due to succeeded webhook on canceled order', [
+                    'order_id' => $orderId,
+                    'payment_id' => $pi['id'] ?? null,
+                    'refund_id' => $refundTx->getTransactionId(),
+                ]);
+            } catch (\Throwable $e) {
+                $order->addCommentToStatusHistory(__('Automatic refund request failed: %1', $e->getMessage()));
+                $this->logger->error('Automatic refund failed for canceled order on succeeded webhook', [
+                    'order_id' => $orderId,
+                    'payment_id' => $pi['id'] ?? null,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+            $order->save();
+            return;
+        }
 
         if ($order->getState() === Order::STATE_PROCESSING) {
             $tx = $this->getFirstTransactionByOrder($orderId);

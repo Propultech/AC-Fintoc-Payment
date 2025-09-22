@@ -19,6 +19,11 @@ use Magento\Store\Model\StoreManagerInterface;
 class ConfigurationService implements ConfigurationServiceInterface
 {
     /**
+     * Centralized defaults
+     */
+    public const DEFAULT_API_BASE_URL = 'https://api.fintoc.com';
+
+    /**
      * Configuration paths
      */
     private const XML_PATH_ACTIVE = 'payment/fintoc_payment/active';

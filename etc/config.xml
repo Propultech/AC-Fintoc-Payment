@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <payment>
             <fintoc_payment>
                 <active>0</active>
                 <model>Fintoc\Payment\Model\Payment</model>
                 <title>Paga con tu Banco</title>
+                <api_base_url>https://api.fintoc.com</api_base_url>
                 <order_status>pending</order_status>
                 <payment_action>authorize_capture</payment_action>
                 <allowspecific>0</allowspecific>

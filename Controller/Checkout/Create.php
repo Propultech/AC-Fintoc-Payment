@@ -21,6 +21,8 @@ use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
+use Fintoc\Payment\Utils\AmountUtils;
+use Fintoc\Payment\Service\ConfigurationService;
 
 /**
  * Controller for creating Fintoc checkout sessions
@@ -118,6 +120,8 @@ class Create extends Action
 
             $apiSecret = $this->getApiSecret();
             $baseUrl = $this->storeManager->getStore()->getBaseUrl();
+            $apiBaseUrl = rtrim((string)$this->configService->getConfig('payment/fintoc_payment/api_base_url') ?: ConfigurationService::DEFAULT_API_BASE_URL, '/');
+            $checkoutEndpoint = $apiBaseUrl . '/v1/checkout_sessions';
 
             // Generate a unique transaction ID
             $transactionId = uniqid('fintoc_', true);
@@ -152,7 +156,7 @@ class Create extends Action
 
             // Prepare request data with updated URLs
             $requestData = [
-                'amount' => $order->getGrandTotal(),
+                'amount' => AmountUtils::roundToIntHalfUp((float)$order->getGrandTotal()),
                 'currency' => $order->getOrderCurrencyCode(),
                 'cancel_url' => $baseUrl . 'fintoc/checkout/commit/action/cancel/tr/' . urlencode($encryptedTransactionId),
                 'success_url' => $baseUrl . 'fintoc/checkout/commit/action/success/tr/' . urlencode($encryptedTransactionId),
@@ -179,7 +183,7 @@ class Create extends Action
                 // Make the API call
                 $response = $this->httpClient->request(
                     'POST',
-                    'https://api.fintoc.com/v1/checkout_sessions',
+                    $checkoutEndpoint,
                     $options
                 );
 

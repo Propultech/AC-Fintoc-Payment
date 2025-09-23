@@ -230,15 +230,23 @@ class View extends \Magento\Backend\Block\Widget\Form\Container
             return false;
         }
 
-        $order = $this->orderRepository->get($tr->getOrderId());
-        $additionalInformation = $order->getPayment()->getAdditionalInformation();
-        $paymentIntentId = $additionalInformation['fintoc_payment_id'] ?? null;
-
-        if (!$paymentIntentId) {
+        $orderId = $tr->getOrderId();
+        if (!$orderId) {
             return false;
         }
 
-        return (string)$tr->getType() === TransactionInterface::TYPE_AUTHORIZATION && (bool)$tr->getOrderId();
+        try {
+            $order = $this->orderRepository->get((int)$orderId);
+            $additionalInformation = $order->getPayment()->getAdditionalInformation();
+            $paymentIntentId = $additionalInformation['fintoc_payment_id'] ?? null;
+            if (!$paymentIntentId) {
+                return false;
+            }
+        } catch (Throwable $e) {
+            return false;
+        }
+
+        return (string)$tr->getType() === TransactionInterface::TYPE_AUTHORIZATION;
     }
 
     /**

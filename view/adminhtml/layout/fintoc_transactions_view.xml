@@ -3,6 +3,15 @@
       layout="admin-2columns-left"
       xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
     <body>
+        <referenceContainer name="content">
+            <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View"
+                   name="fintoc.payment.transactions.view">
+                <block class="Magento\Backend\Block\Template"
+                       name="fintoc.payment.transactions.view.edit.form"
+                       as="form"
+                       template="Fintoc_Payment::transactions/edit/form.phtml"/>
+            </block>
+        </referenceContainer>
         <referenceContainer name="left">
             <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View\Tabs"
                    name="fintoc.payment.transactions.view.tabs">
@@ -22,16 +31,5 @@
                 </action>
             </block>
         </referenceContainer>
-        <referenceContainer name="content">
-            <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View"
-                   name="fintoc.payment.transactions.view">
-                <block class="Magento\Backend\Block\Template"
-                       name="fintoc.payment.transactions.view.edit.form"
-                       as="form"
-                       template="Fintoc_Payment::transactions/edit/form.phtml">
-                </block>
-            </block>
-        </referenceContainer>
-
     </body>
 </page>

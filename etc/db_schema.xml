@@ -2,7 +2,7 @@
 <schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
     <table name="fintoc_payment_transactions" resource="default" engine="innodb" comment="Fintoc Payment Transactions">
-        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
+        <column xsi:type="bigint" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Entity ID"/>
         <column xsi:type="varchar" name="transaction_id" length="255" nullable="false" comment="Fintoc Transaction ID"/>
         <column xsi:type="int" name="order_id" padding="10" unsigned="true" nullable="true" comment="Magento Order ID"/>

@@ -9,28 +9,27 @@
                 <block class="Magento\Backend\Block\Template"
                        name="fintoc.payment.transactions.view.edit.form"
                        as="form"
-                       template="Fintoc_Payment::transactions/edit/form.phtml">
-                    <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View\Tabs"
-                           name="fintoc.payment.transactions.view.tabs"
-                           as="tabs">
-                        <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View\Tab\Information"
-                               name="fintoc.payment.transactions.view.tab.information"
-                               template="Fintoc_Payment::transactions/tab/information.phtml"/>
-                        <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View\Tab\WebhookHistory"
-                               name="fintoc.payment.transactions.view.tab.webhook"
-                               template="Fintoc_Payment::transactions/tab/webhook_history.phtml"/>
-                        <action method="addTab">
-                            <argument name="name" xsi:type="string">information</argument>
-                            <argument name="block" xsi:type="string">fintoc.payment.transactions.view.tab.information</argument>
-                        </action>
-                        <action method="addTab">
-                            <argument name="name" xsi:type="string">webhook_history</argument>
-                            <argument name="block" xsi:type="string">fintoc.payment.transactions.view.tab.webhook</argument>
-                        </action>
-                    </block>
-                </block>
+                       template="Fintoc_Payment::transactions/edit/form.phtml"/>
             </block>
         </referenceContainer>
-
+        <referenceContainer name="left">
+            <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View\Tabs"
+                   name="fintoc.payment.transactions.view.tabs">
+                <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View\Tab\Information"
+                       name="fintoc.payment.transactions.view.tab.information"
+                       template="Fintoc_Payment::transactions/tab/information.phtml"/>
+                <block class="Fintoc\Payment\Block\Adminhtml\Transactions\View\Tab\WebhookHistory"
+                       name="fintoc.payment.transactions.view.tab.webhook"
+                       template="Fintoc_Payment::transactions/tab/webhook_history.phtml"/>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">information</argument>
+                    <argument name="block" xsi:type="string">fintoc.payment.transactions.view.tab.information</argument>
+                </action>
+                <action method="addTab">
+                    <argument name="name" xsi:type="string">webhook_history</argument>
+                    <argument name="block" xsi:type="string">fintoc.payment.transactions.view.tab.webhook</argument>
+                </action>
+            </block>
+        </referenceContainer>
     </body>
 </page>

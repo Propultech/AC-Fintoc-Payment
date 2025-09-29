@@ -152,7 +152,7 @@ class Create extends Action
             );
 
             // Encrypt the transaction ID for URLs
-            $encryptedTransactionId = $this->encryptor->encrypt($transactionId);
+            $encryptedTransactionId = $transactionId;
 
             // Prepare request data with updated URLs
             $requestData = [

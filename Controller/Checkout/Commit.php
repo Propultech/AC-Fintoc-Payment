@@ -122,7 +122,7 @@ class Commit extends Action
 
             // Decrypt the transaction ID
             try {
-                $transactionId = $this->encryptor->decrypt($encryptedTransactionId);
+                $transactionId = $encryptedTransactionId;
             } catch (Exception $e) {
                 $this->logger->error('Commit: Error decrypting transaction ID: ' . $e->getMessage(), ['exception' => $e]);
                 throw new LocalizedException(__('Invalid transaction ID'));

@@ -23,16 +23,6 @@ class CheckoutSessionFinishedHandler extends AbstractWebhookHandler
         if (!$orderId) {
             throw new LocalizedException(__('No order ID found in checkout session metadata'));
         }
-        $order = $this->loadOrderOrFail($orderId);
-
-        $order->addCommentToStatusHistory(
-            __(
-                'Fintoc checkout session finished. Session ID: %1, Status: %2',
-                $session['id'] ?? 'N/A',
-                $session['status'] ?? 'finished'
-            )
-        );
-        $order->save();
 
         $tx = $this->getFirstTransactionByOrder($orderId);
         if ($tx) {

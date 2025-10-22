@@ -6,7 +6,6 @@ declare(strict_types=1);
 
 namespace Fintoc\Payment\Service;
 
-use Exception;
 use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
@@ -62,10 +61,11 @@ class ConfigurationService implements ConfigurationServiceInterface
      * @param EncryptorInterface $encryptor
      */
     public function __construct(
-        ScopeConfigInterface                             $scopeConfig,
-        StoreManagerInterface                            $storeManager,
-        EncryptorInterface $encryptor
-    ) {
+        ScopeConfigInterface  $scopeConfig,
+        StoreManagerInterface $storeManager,
+        EncryptorInterface    $encryptor
+    )
+    {
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->encryptor = $encryptor;

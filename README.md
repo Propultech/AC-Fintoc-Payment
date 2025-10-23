@@ -11,36 +11,27 @@ Fintoc_Payment integrates the Fintoc Redirect Page flow into Magento 2 to collec
 - PHP 7.4, 8.1, 8.2, 8.3 (aligned with your Magento version)
 - Publicly accessible base URL to allow Fintoc to call your webhooks and for customers to return after payment
 
+## Installation, Configuration and Tests suggested workflow
+1) Add Fintoc_Payment to your Magento 2 store.
+2) Get your test credentials from Fintoc.
+   1) Create a test account.
+   2) Create a test API key.
+   3) Create a test Webhook and get the secret.
+      1) Be sure to enable the `payment_intent.succeeded` and `payment_intent.failed` events.
+      2) Be sure to use a publicly accessible URL for the webhook.
+3) Configure the module.
+4) Place an order with Fintoc as the payment method.
+5) Check the order status in the admin.
+6) Check the order status in the frontend.
+7) Check the order status in the Fintoc dashboard.
+8) Check the transaction details in the admin.
+9) Go Live
+
 ## Installation (strongly recommended steps)
 
-This repository is a local Magento module (app/code). Use the manual installation unless you have a private Composer repository for it.
+### Composer installation (recommended)
 
-### Manual installation
-1) Copy the module into your Magento installation at:
-   `app/code/Fintoc/Payment`
-
-2) Enable and install the module (this also creates the DB table):
-```bash
-bin/magento module:enable Fintoc_Payment
-bin/magento setup:upgrade
 ```
-
-3) Build DI and static assets (on production modes):
-```bash
-bin/magento setup:di:compile
-bin/magento setup:static-content:deploy -f
-```
-
-4) Flush caches:
-```bash
-bin/magento cache:flush
-```
-
-5) Verify that the table `fintoc_payment_transactions` exists and the admin menu Sales → Fintoc → Transactions loads.
-
-### Composer installation (optional)
-If you host the module in a VCS or private repository, add it to your project and install:
-```bash
 composer require fintoc/magento2-payment
 bin/magento module:enable Fintoc_Payment
 bin/magento setup:upgrade
@@ -48,7 +39,6 @@ bin/magento setup:di:compile
 bin/magento setup:static-content:deploy -f
 bin/magento cache:flush
 ```
-Note: This repo is commonly used as app/code; ensure your package/repository is resolvable before using Composer.
 
 ## Configuration
 Go to Stores → Configuration → Sales → Payment Methods → Fintoc.

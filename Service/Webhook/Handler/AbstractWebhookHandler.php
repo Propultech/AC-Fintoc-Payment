@@ -8,6 +8,7 @@ use Fintoc\Payment\Api\TransactionRepositoryInterface;
 use Fintoc\Payment\Api\TransactionServiceInterface;
 use Fintoc\Payment\Service\Webhook\WebhookConstants;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
@@ -75,13 +76,13 @@ abstract class AbstractWebhookHandler
     /**
      * @param string $incrementId
      * @return Order
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function loadOrderOrFail(string $incrementId): Order
     {
         $order = $this->orderFactory->create()->loadByIncrementId($incrementId);
         if (!$order->getId()) {
-            throw new \Magento\Framework\Exception\LocalizedException(__('Order not found: %1', $incrementId));
+            throw new LocalizedException(__('Order not found: %1', $incrementId));
         }
         return $order;
     }
@@ -142,6 +143,18 @@ abstract class AbstractWebhookHandler
 
     /**
      * Generic upsert + append for non-PI objects (e.g., checkout session)
+     *
+     * @param Order $order
+     * @param string $externalId
+     * @param float|null $amount
+     * @param string|null $currency
+     * @param string $status
+     * @param WebhookEvent $event
+     * @param string $defaultType
+     * @param array $extraMeta
+     * @param array|null $payloadToStore
+     * @return TransactionInterface
+     * @throws LocalizedException
      */
     protected function upsertAndAppendTransactionRaw(
         Order        $order,

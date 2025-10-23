@@ -4,10 +4,15 @@ declare(strict_types=1);
 namespace Fintoc\Payment\Service\Webhook\Handler;
 
 use Exception;
+use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\Data\TransactionInterface;
+use Fintoc\Payment\Api\RefundServiceInterface;
 use Fintoc\Payment\Api\TransactionRepositoryInterface;
 use Fintoc\Payment\Api\TransactionServiceInterface;
+use Fintoc\Payment\Model\Config\Source\PaymentAction;
+use Fintoc\Payment\Service\Webhook\WebhookConstants;
 use Fintoc\Payment\Service\Webhook\WebhookEvent;
+use Magento\Framework\DB\Transaction as DbTransaction;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\Order;
@@ -15,9 +20,7 @@ use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Service\InvoiceService;
-use Magento\Framework\DB\Transaction as DbTransaction;
 use Psr\Log\LoggerInterface;
-use Fintoc\Payment\Api\RefundServiceInterface;
 
 class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
 {
@@ -38,32 +41,39 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
      */
     private $refundService;
 
+    private $configService;
+
     /**
      * @param OrderFactory $orderFactory
      * @param InvoiceService $invoiceService
      * @param DbTransaction $dbTransaction
      * @param InvoiceSender $invoiceSender
+     * @param RefundServiceInterface $refundService
      * @param TransactionServiceInterface $transactionService
      * @param TransactionRepositoryInterface $transactionRepository
      * @param Json $json
      * @param LoggerInterface $logger
+     * @param ConfigurationServiceInterface $configService
      */
     public function __construct(
-        OrderFactory $orderFactory,
-        InvoiceService $invoiceService,
-        DbTransaction $dbTransaction,
-        InvoiceSender $invoiceSender,
-        RefundServiceInterface $refundService,
-        TransactionServiceInterface $transactionService,
+        OrderFactory                   $orderFactory,
+        InvoiceService                 $invoiceService,
+        DbTransaction                  $dbTransaction,
+        InvoiceSender                  $invoiceSender,
+        RefundServiceInterface         $refundService,
+        TransactionServiceInterface    $transactionService,
         TransactionRepositoryInterface $transactionRepository,
-        Json $json,
-        LoggerInterface $logger
-    ) {
+        Json                           $json,
+        LoggerInterface                $logger,
+        ConfigurationServiceInterface  $configService
+    )
+    {
         parent::__construct($orderFactory, $transactionService, $transactionRepository, $json, $logger, null);
         $this->invoiceService = $invoiceService;
         $this->dbTransaction = $dbTransaction;
         $this->invoiceSender = $invoiceSender;
         $this->refundService = $refundService;
+        $this->configService = $configService;
     }
 
     /**
@@ -120,7 +130,7 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
         if ($order->getState() === Order::STATE_PROCESSING) {
             $tx = $this->getFirstTransactionByOrder($orderId);
             if ($tx) {
-                $this->appendWebhookPayload($tx, $event, \Fintoc\Payment\Service\Webhook\WebhookConstants::EV_PI_SUCCEEDED);
+                $this->appendWebhookPayload($tx, $event, WebhookConstants::EV_PI_SUCCEEDED);
             }
             $this->logger->debug('Order already processed: ' . $orderId);
             return;
@@ -152,7 +162,7 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
 
         // Create invoice
         try {
-            if ($order->canInvoice()) {
+            if ($order->canInvoice() && $this->configService->getPaymentAction() == PaymentAction::ACTION_AUTHORIZE_CAPTURE) {
                 $invoice = $this->invoiceService->prepareInvoice($order);
                 $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
                 $invoice->register();

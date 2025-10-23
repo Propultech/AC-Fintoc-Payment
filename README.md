@@ -66,6 +66,17 @@ Refunds-specific settings (under Fintoc → Refunds):
 
 Supported currency: CLP.
 
+### Multistore / Multi-website Configuration
+If your Magento serves multiple storefronts, configure Fintoc per scope so each website can use the correct credentials and webhook URL.
+
+- Scope switcher: In Stores → Configuration, use the top-left Scope selector to choose the Website or Store View before opening Sales → Payment Methods → Fintoc. Uncheck “Use Default/Use Website” to override.
+- Per-website credentials: Set the Secret API Key and Webhook Secret that belong to the website’s Fintoc project. It’s possible to reuse keys, but per-website keys/secrets are recommended for isolation and auditing.
+- Webhook per base URL: Create a webhook in Fintoc for each website’s base URL and point it to:
+  - {WEBSITE_BASE_URL}/fintoc/webhook (equivalent endpoint: {WEBSITE_BASE_URL}/fintoc/webhook/index)
+  Paste the matching Webhook Secret into that website’s configuration.
+- Environment separation: Keep Sandbox and Production distinct (different domains/keys/secrets and separate webhooks). Use Magento scope overrides to assign sandbox keys to staging and production keys to live.
+- Tips: If you only vary language per Store View under one website, configure at Website scope and optionally override presentation-only fields (Title/Sort order) per Store View.
+
 ## How the flow works
 1) Customer places an order with Fintoc payment method.
 2) Module creates a pre-authorization transaction record and posts to `https://api.fintoc.com/v1/checkout_sessions` using GuzzleHttp with:
@@ -103,6 +114,13 @@ Signature verification:
 
 Error responses:
 - This webhook is built for machine-to-machine calls. Unhandled errors return HTTP 5xx, as required for webhooks.
+
+### Invoicing lifecycle
+- New order: When the customer places an order with Fintoc, the order is created with the configured New Order Status (typically Pending) and a Fintoc transaction row is stored.
+- Payment succeeded: Upon receiving `payment_intent.succeeded`, the module validates the signature and creates a paid invoice for the order. If an invoice already exists, the handler is idempotent and will not create a duplicate.
+- Payment failed/rejected/expired: The module cancels the order (when applicable), marks the transaction as failed, and restores the original quote so the shopper can retry checkout.
+- Timing considerations: If the shopper returns to your site before the webhook arrives, the order remains in its initial status until the webhook is delivered. The webhook is the source of truth that advances the order and creates the invoice.
+- Logging and auditing: All webhook payloads and status transitions are recorded in the `fintoc_payment_transactions` table and `var/log/fintoc.log` for traceability.
 
 ## Transactions & storage
 - DB table: `fintoc_payment_transactions` (created via `etc/db_schema.xml`).

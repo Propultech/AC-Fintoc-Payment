@@ -17,6 +17,10 @@
         {
             "name": "Propultech",
             "email": "ecommerce@propul.tech"
+        },
+        {
+            "name": "Jhonny Negrin",
+            "email": "jhonny.negrin@propul.tech"
         }
     ],
     "autoload": {

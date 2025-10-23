@@ -47,11 +47,44 @@ Configuration
 
 Webhook setup
 1) In the Fintoc Dashboard, create a webhook pointing to:
-   - {BASE_URL}/fintoc/webhook
-   - Method: POST
+- {BASE_URL}/fintoc/webhook
+- Method: POST
 2) Copy the Webhook Secret from Fintoc and paste it into Magento (Stores → Configuration → Sales → Payment Methods → Fintoc → Basic Settings → Webhook Secret).
 3) Test delivery from Fintoc and confirm Magento responds with 200 OK.
    ![Webhook setup](images/fintoc-get-webhook-secret.png)
+
+Multistore / Multi-website configuration
+If your Magento instance serves multiple storefronts, configure Fintoc per scope so each website can use the correct credentials and webhook URL.
+
+1) Pick the scope before editing
+- Go to Stores → Configuration → Sales → Payment Methods → Fintoc.
+- Use the Scope switcher in the top-left to choose the Website or Store View you want to configure. Uncheck "Use Default" or "Use Website" to override values.
+
+2) Configure credentials per website
+- Secret API Key: Set the key that belongs to the website’s Fintoc project/account.
+- Webhook Secret: Set the secret that matches the webhook you created for this website in the Fintoc Dashboard.
+- It’s OK to reuse the same keys across websites if your Fintoc account allows, but using per-website keys and webhook secrets is recommended for isolation and troubleshooting.
+
+3) Webhook URL per website
+- Each website typically has its own base URL. Configure a dedicated webhook in Fintoc for each base URL:
+  - {WEBSITE_BASE_URL}/fintoc/webhook
+- Paste the corresponding Webhook Secret in that website’s configuration in Magento.
+
+4) Environments (Sandbox vs Production)
+- Keep sandbox and production completely separate (different API Secret and Webhook Secret, different webhook endpoints/domains).
+- Use Magento’s scope overrides to place sandbox keys on staging sites and production keys on live sites.
+
+5) Tips
+- If you have multiple language store views under the same website, configure at Website scope unless you need different titles/sort order per Store View.
+- After saving, flush caches when prompted. Place a test order on each storefront and verify you see transactions under Sales → Fintoc → Transactions.
+
+How webhooks and invoicing work (at a glance)
+- Order placement: The customer is redirected to Fintoc. Magento creates a transaction row and sets the order to your configured New Order Status (usually Pending).
+- Webhook event payment_intent.succeeded: The module verifies the Fintoc-Signature using your Webhook Secret, then creates a paid invoice for the order and marks the transaction as successful. If an invoice already exists, the handler skips creating a duplicate.
+- Webhook events failed/rejected/expired: The module cancels the order (if applicable), marks the transaction as failed, and restores the customer’s quote so they can try again.
+- Timing: Whether the customer returns before or after the webhook arrives, the webhook is the source of truth for payment status. It will advance the order and create the invoice when appropriate.
+- Duplicate safety: Re-deliveries from Fintoc are safe; handlers are idempotent and won’t create duplicate invoices.
+- Troubleshooting: On signature verification failure, the module returns 5xx and logs the error. Check var/log/fintoc.log and order history comments for details.
 
 Customer checkout experience
 1) Customer adds items to cart and proceeds to checkout.

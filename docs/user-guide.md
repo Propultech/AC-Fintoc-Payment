@@ -9,7 +9,7 @@ Prerequisites
 - A Fintoc account with API and Webhook credentials.
 - Magento 2 store admin access.
 
-Installation (if not preinstalled)
+## Installation
 1) Ensure the module is installed and enabled by your developer or partner.
    - Example (for developers):
      - composer require fintoc/module-payment
@@ -17,7 +17,7 @@ Installation (if not preinstalled)
      - bin/magento setup:upgrade
      - bin/magento cache:flush
 
-Configuration
+## Configuration
 1) Log in to Magento Admin.
 2) Go to Stores → Configuration → Sales → Payment Methods → Fintoc.
    ![Admin navigation to payment methods](images/admin-navigation.png)
@@ -45,7 +45,7 @@ Configuration
    ![Refunds Settings](images/fintoc-refunds-settings.png)
 6) Save Config and clear caches if prompted.
 
-Webhook setup
+### Webhook setup
 1) In the Fintoc Dashboard, create a webhook pointing to:
 - {BASE_URL}/fintoc/webhook
 - Method: POST
@@ -53,7 +53,7 @@ Webhook setup
 3) Test delivery from Fintoc and confirm Magento responds with 200 OK.
    ![Webhook setup](images/fintoc-get-webhook-secret.png)
 
-Multistore / Multi-website configuration
+## Multistore / Multi-website configuration
 If your Magento instance serves multiple storefronts, configure Fintoc per scope so each website can use the correct credentials and webhook URL.
 
 1) Pick the scope before editing
@@ -78,7 +78,7 @@ If your Magento instance serves multiple storefronts, configure Fintoc per scope
 - If you have multiple language store views under the same website, configure at Website scope unless you need different titles/sort order per Store View.
 - After saving, flush caches when prompted. Place a test order on each storefront and verify you see transactions under Sales → Fintoc → Transactions.
 
-How webhooks and invoicing work (at a glance)
+### How webhooks and invoicing work (at a glance)
 - Order placement: The customer is redirected to Fintoc. Magento creates a transaction row and sets the order to your configured New Order Status (usually Pending).
 - Webhook event payment_intent.succeeded: The module verifies the Fintoc-Signature using your Webhook Secret, then creates a paid invoice for the order and marks the transaction as successful. If an invoice already exists, the handler skips creating a duplicate.
 - Webhook events failed/rejected/expired: The module cancels the order (if applicable), marks the transaction as failed, and restores the customer’s quote so they can try again.
@@ -86,7 +86,7 @@ How webhooks and invoicing work (at a glance)
 - Duplicate safety: Re-deliveries from Fintoc are safe; handlers are idempotent and won’t create duplicate invoices.
 - Troubleshooting: On signature verification failure, the module returns 5xx and logs the error. Check var/log/fintoc.log and order history comments for details.
 
-Customer checkout experience
+## Customer checkout experience
 1) Customer adds items to cart and proceeds to checkout.
 2) On the Payment Method step, the customer selects Fintoc and clicks Place Order.
     ![Payment Method step](images/checkout-select-fintoc.png)
@@ -95,7 +95,7 @@ Customer checkout experience
 4) After completion, the customer returns to your store and sees the Order Success page.
     ![Order Success page](images/order-success-page.png)
 
-Viewing transactions (Admin)
+## Viewing transactions (Admin)
 1) Go to Sales → Fintoc → Transactions.
 2) Use filters to find a specific order or transaction.
 3) Click into a transaction to view details and webhook history.
@@ -103,23 +103,23 @@ Viewing transactions (Admin)
     ![transaction grid](images/admin-transactions-grid-2.png)
     ![transaction view](images/admin-transactions-view.png)
 
-Refunds (Admin)
+## Refunds (Admin)
 - From Sales → Fintoc → Refundable Orders, open a refund form for an order and submit.
 - Alternatively, use the standard Magento Credit Memo flow if enabled by your configuration.
     ![Refundable Orders Grid](images/admin-refundable-orders-grid.png)
     ![Create Refund](images/admin-refund-create.png)
 
-Tips and best practices
+## Tips and best practices
 - Keep logging enabled in production at a reasonable Debug Level. Avoid logging sensitive data unless requested by support.
 - Verify that your server is publicly reachable by Fintoc for webhooks (firewalls, maintenance mode, IP allowlists).
 - If customers report missing payment method, check country restrictions and maximum order amount settings.
 
-Troubleshooting
+## Troubleshooting
 - Webhook errors (401/400): Re-check the Webhook Secret and ensure Fintoc sends the correct signature header.
 - Webhook errors (5xx): check the logs in var/log/fintoc.log.
 - Payment method not visible: Ensure it is enabled, not exceeding Max Order Amount, and allowed for the current country.
 - Refund not reflected: Confirm Refunds are enabled and that the webhook events for refund were delivered.
 
-Support
+## Support
 - Provide recent entries from var/log/fintoc*.log when contacting support.
 - Share the order increment ID and (if available) the Fintoc transaction_id for faster diagnosis.

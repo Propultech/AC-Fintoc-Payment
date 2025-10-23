@@ -66,7 +66,7 @@ Refunds-specific settings (under Fintoc → Refunds):
 
 Supported currency: CLP.
 
-### Multistore / Multi-website Configuration
+## Multistore / Multi-website Configuration
 If your Magento serves multiple storefronts, configure Fintoc per scope so each website can use the correct credentials and webhook URL.
 
 - Scope switcher: In Stores → Configuration, use the top-left Scope selector to choose the Website or Store View before opening Sales → Payment Methods → Fintoc. Uncheck “Use Default/Use Website” to override.

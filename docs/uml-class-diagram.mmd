@@ -14,6 +14,8 @@ classDiagram
   class Api_Webhook_WebhookIdempotencyServiceInterface {<<interface>>}
   class Api_Webhook_WebhookRouterInterface {<<interface>>}
   class Api_Webhook_WebhookHandlerInterface {<<interface>>}
+  class Api_Checkout_RequestBuilderInterface {<<interface>>}
+  class Api_Checkout_MetadataBuilderInterface {<<interface>>}
 
   %% Model
   class Model_Payment {
@@ -56,6 +58,8 @@ classDiagram
   class Service_Webhook_RefundSucceededHandler
   class Service_Webhook_RefundFailedHandler
   class Service_Webhook_RefundInProgressHandler
+  class Service_Checkout_RequestBuilder
+  class Service_Checkout_MetadataBuilder
 
   %% Controller
   class Controller_Checkout_Create
@@ -85,6 +89,8 @@ classDiagram
   Api_Webhook_WebhookIdempotencyServiceInterface <|.. Service_Webhook_WebhookIdempotencyService
   Api_Webhook_WebhookRouterInterface <|.. Service_Webhook_WebhookRouter
   Api_Webhook_WebhookHandlerInterface <|.. Service_Webhook_AbstractWebhookHandler
+  Api_Checkout_RequestBuilderInterface <|.. Service_Checkout_RequestBuilder
+  Api_Checkout_MetadataBuilderInterface <|.. Service_Checkout_MetadataBuilder
 
   %% Inheritance among webhook handlers
   Service_Webhook_AbstractWebhookHandler <|-- Service_Webhook_AbstractPaymentIntentHandler
@@ -104,8 +110,10 @@ classDiagram
   Controller_Webhook_Index --> Service_Webhook_WebhookRouter : dispatches
   Controller_Webhook_Index --> Service_TransactionService : uses
   Controller_Checkout_Create --> Service_ConfigurationService : uses
+  Controller_Checkout_Create --> Api_Checkout_RequestBuilderInterface : uses
   Controller_Checkout_Create --> Logger_Logger : logs
   Controller_Checkout_Commit --> Logger_Logger : logs
+  Service_Checkout_RequestBuilder --> Api_Checkout_MetadataBuilderInterface : uses
 
   Model_TransactionRepository --> Model_ResourceModel_Transaction : persists
   Model_TransactionRepository --> Model_ResourceModel_Transaction_Collection : queries

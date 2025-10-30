@@ -2,7 +2,7 @@
 
 This folder contains the technical documentation, UML diagrams, and the user guide for the Magento 2 module Fintoc_Payment.
 
-Generated: 2025-09-16 20:25 local time
+Generated: 2025-10-30 11:36 local time
 
 Contents
 - Technical overview: ./technical-overview.md
@@ -15,6 +15,8 @@ Contents
 - UML class diagrams:
   - PlantUML: ./uml-class-diagram.puml
   - Mermaid (for quick Git hosting previews): ./uml-class-diagram.mmd
+
+Note: Documentation and diagrams updated to include Checkout Request/Metadata builders extension points.
 
 How to render UML
 - PlantUML (.puml)

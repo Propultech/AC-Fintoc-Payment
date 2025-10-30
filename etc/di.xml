@@ -13,6 +13,10 @@
     <!-- Configuration Service -->
     <preference for="Fintoc\Payment\Api\ConfigurationServiceInterface" type="Fintoc\Payment\Service\ConfigurationService" />
 
+    <!-- Checkout Builders -->
+    <preference for="Fintoc\Payment\Api\Checkout\RequestBuilderInterface" type="Fintoc\Payment\Service\Checkout\RequestBuilder" />
+    <preference for="Fintoc\Payment\Api\Checkout\MetadataBuilderInterface" type="Fintoc\Payment\Service\Checkout\MetadataBuilder" />
+
     <!-- Refund Services -->
     <preference for="Fintoc\Payment\Api\RefundServiceInterface" type="Fintoc\Payment\Service\RefundService" />
     <preference for="Fintoc\Payment\Api\RefundsApiClientInterface" type="Fintoc\Payment\Service\RefundsApiClient" />

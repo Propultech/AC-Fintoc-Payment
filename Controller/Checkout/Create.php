@@ -20,9 +20,9 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
-use Psr\Log\LoggerInterface;
-use Fintoc\Payment\Utils\AmountUtils;
+use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
 use Fintoc\Payment\Service\ConfigurationService;
+use Fintoc\Payment\Api\Checkout\RequestBuilderInterface;
 
 /**
  * Controller for creating Fintoc checkout sessions
@@ -70,6 +70,11 @@ class Create extends Action
     protected $transactionService;
 
     /**
+     * @var RequestBuilderInterface
+     */
+    protected $requestBuilder;
+
+    /**
      * @param Context $context
      * @param JsonFactory $resultJsonFactory
      * @param CheckoutSession $checkoutSession
@@ -79,6 +84,7 @@ class Create extends Action
      * @param LoggerInterface $logger
      * @param EncryptorInterface $encryptor
      * @param TransactionServiceInterface $transactionService
+     * @param RequestBuilderInterface $requestBuilder
      */
     public function __construct(
         Context                       $context,
@@ -89,7 +95,8 @@ class Create extends Action
         GuzzleClient                  $httpClient,
         LoggerInterface               $logger,
         EncryptorInterface            $encryptor,
-        TransactionServiceInterface   $transactionService
+        TransactionServiceInterface   $transactionService,
+        RequestBuilderInterface        $requestBuilder
     ) {
         parent::__construct($context);
         $this->resultJsonFactory = $resultJsonFactory;
@@ -100,6 +107,7 @@ class Create extends Action
         $this->logger = $logger;
         $this->encryptor = $encryptor;
         $this->transactionService = $transactionService;
+        $this->requestBuilder = $requestBuilder;
     }
 
     /**
@@ -119,7 +127,6 @@ class Create extends Action
             }
 
             $apiSecret = $this->getApiSecret();
-            $baseUrl = $this->storeManager->getStore()->getBaseUrl();
             $apiBaseUrl = rtrim((string)$this->configService->getConfig('payment/fintoc_payment/api_base_url') ?: ConfigurationService::DEFAULT_API_BASE_URL, '/');
             $checkoutEndpoint = $apiBaseUrl . '/v1/checkout_sessions';
 
@@ -151,20 +158,8 @@ class Create extends Action
                 ]
             );
 
-            // Encrypt the transaction ID for URLs
-            $encryptedTransactionId = $transactionId;
-
-            // Prepare request data with updated URLs
-            $requestData = [
-                'amount' => AmountUtils::roundToIntHalfUp((float)$order->getGrandTotal()),
-                'currency' => $order->getOrderCurrencyCode(),
-                'cancel_url' => $baseUrl . 'fintoc/checkout/commit/action/cancel/tr/' . urlencode($encryptedTransactionId),
-                'success_url' => $baseUrl . 'fintoc/checkout/commit/action/success/tr/' . urlencode($encryptedTransactionId),
-                'customer_email' => $order->getCustomerEmail(),
-                'metadata' => [
-                    'ecommerce_order_id' => $order->getIncrementId()
-                ]
-            ];
+            // Build request data via request builder
+            $requestData = $this->requestBuilder->build($order, $transactionId);
 
             // Log the request
             $this->logger->debug('Creating Fintoc checkout session', ['request' => $requestData]);

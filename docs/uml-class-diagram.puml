@@ -23,6 +23,10 @@ package "Fintoc\\Payment" {
       interface WebhookRouterInterface
       interface WebhookHandlerInterface
     }
+    package Checkout {
+      interface RequestBuilderInterface
+      interface MetadataBuilderInterface
+    }
   }
 
   package Model {
@@ -61,6 +65,10 @@ package "Fintoc\\Payment" {
       class RefundSucceededHandler extends AbstractWebhookHandler
       class RefundFailedHandler extends AbstractWebhookHandler
       class RefundInProgressHandler extends AbstractWebhookHandler
+    }
+    package Checkout {
+      class RequestBuilder implements Api.Checkout.RequestBuilderInterface
+      class MetadataBuilder implements Api.Checkout.MetadataBuilderInterface
     }
   }
 
@@ -132,6 +140,7 @@ Controller.Webhook.Index --> Service.TransactionService : uses
 Controller.Webhook.Index --> Api.ConfigurationServiceInterface : uses
 
 Controller.Checkout.Create --> Service.ConfigurationService : uses
+Controller.Checkout.Create --> Api.Checkout.RequestBuilderInterface : uses
 Controller.Checkout.Create --> Logger.Logger : logs
 Controller.Checkout.Commit --> Logger.Logger : logs
 
@@ -139,6 +148,7 @@ Model.TransactionRepository --> Model.ResourceModel.Transaction : persists
 Model.TransactionRepository --> Model.ResourceModel.Transaction_Collection : queries
 Service.TransactionService --> Api.TransactionRepositoryInterface : uses
 Service.RefundService --> Service.RefundsApiClient : calls
+Service.Checkout.RequestBuilder --> Api.Checkout.MetadataBuilderInterface : uses
 Service.RefundService --> Logger.Logger : logs
 Service.Webhook.WebhookRouter --> Service.Webhook.AbstractWebhookHandler : contains *
 Service.Webhook.WebhookRequestValidator --> Utils.WebhookSignature : validates

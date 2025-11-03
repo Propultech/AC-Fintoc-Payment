@@ -10,12 +10,11 @@ use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\LoggerServiceInterface;
 use Fintoc\Payment\Logger\Logger;
 use Monolog\Logger as MonologLogger;
-use Psr\Log\LoggerInterface;
 
 /**
  * Service for logging messages
  */
-class LoggerService implements LoggerServiceInterface, LoggerInterface
+class LoggerService implements LoggerServiceInterface
 {
     /**
      * @var Logger

@@ -16,6 +16,8 @@ Code entry points
   - JS renderer: view/frontend/web/js/view/payment/method-renderer/fintoc-method.js
   - Create endpoint: Fintoc\Payment\Controller\Checkout\Create
   - Commit endpoint: Fintoc\Payment\Controller\Checkout\Commit
+  - Request building: Api\Checkout\RequestBuilderInterface (default Service\Checkout\RequestBuilder)
+  - Metadata building: Api\Checkout\MetadataBuilderInterface (default Service\Checkout\MetadataBuilder)
 - Webhooks: Fintoc\Payment\Controller\Webhook\Index → dispatches to Service\Webhook.
 
 Key services and contracts
@@ -78,3 +80,94 @@ Troubleshooting
 References
 - See technical-overview.md and architecture.md for a broader context.
 - UML diagrams: uml-class-diagram.puml and uml-class-diagram.mmd
+
+
+## Checkout Request & Metadata Builders — Extension Points (NEW)
+
+To allow third‑party modules to customize the request payload sent to Fintoc, the module provides two builder interfaces with default implementations and plugin seams:
+
+- Interfaces
+  - `Fintoc\Payment\Api\Checkout\RequestBuilderInterface`
+  - `Fintoc\Payment\Api\Checkout\MetadataBuilderInterface`
+- Default implementations
+  - `Fintoc\Payment\Service\Checkout\RequestBuilder`
+  - `Fintoc\Payment\Service\Checkout\MetadataBuilder`
+- Wiring
+  - Preferences are declared in `etc/di.xml`, so plugins can target the interfaces and affect all usages.
+- Usage
+  - The controller `Fintoc\Payment\Controller\Checkout\Create` calls `RequestBuilderInterface::build($order, $transactionId)` to compose the full payload (amount/currency, success/cancel URLs, customer email, and metadata from `MetadataBuilderInterface`).
+
+### Adding or modifying top‑level request fields
+
+Example plugin registered against the interface (recommended):
+
+```xml
+<!-- etc/di.xml in your module -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Fintoc\Payment\Api\Checkout\RequestBuilderInterface">
+        <plugin name="vendor_customize_fintoc_request"
+                type="Vendor\Module\Plugin\Fintoc\RequestBuilderPlugin"
+                sortOrder="10" />
+    </type>
+</config>
+```
+
+```php
+<?php
+namespace Vendor\Module\Plugin\Fintoc;
+
+use Fintoc\Payment\Api\Checkout\RequestBuilderInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+
+class RequestBuilderPlugin
+{
+    public function afterBuild(
+        RequestBuilderInterface $subject,
+        array $result,
+        OrderInterface $order,
+        string $transactionId
+    ): array {
+        // Add custom fields or adjust existing ones
+        $result['metadata']['custom_flag'] = 'yes';
+        $result['customer_email'] = strtolower($result['customer_email'] ?? '');
+        return $result;
+    }
+}
+```
+
+### Adding or modifying metadata only
+
+```xml
+<type name="Fintoc\Payment\Api\Checkout\MetadataBuilderInterface">
+    <plugin name="vendor_customize_fintoc_metadata"
+            type="Vendor\Module\Plugin\Fintoc\MetadataBuilderPlugin"
+            sortOrder="10" />
+</type>
+```
+
+```php
+<?php
+namespace Vendor\Module\Plugin\Fintoc;
+
+use Fintoc\Payment\Api\Checkout\MetadataBuilderInterface;
+use Magento\Sales\Api\Data\OrderInterface;
+
+class MetadataBuilderPlugin
+{
+    public function afterBuild(
+        MetadataBuilderInterface $subject,
+        array $result,
+        OrderInterface $order,
+        string $transactionId
+    ): array {
+        $result['customer_group'] = (string)($order->getCustomerGroupId() ?? '');
+        $result['transaction_hint'] = substr($transactionId, 0, 8);
+        return $result;
+    }
+}
+```
+
+Notes
+- No controller changes are needed; plugins apply automatically because controllers type‑hint the interfaces.
+- Keep payloads minimal and avoid storing secrets inside metadata.

@@ -7,7 +7,7 @@ use Fintoc\Payment\Api\Webhook\WebhookRequestValidatorInterface;
 use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Exceptions\WebhookSignatureError;
 use Fintoc\Payment\Utils\WebhookSignature;
-use Psr\Log\LoggerInterface;
+use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
 
 class WebhookRequestValidator implements WebhookRequestValidatorInterface
 {

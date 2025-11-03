@@ -19,7 +19,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
-use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Controller for handling Fintoc payment callbacks (success/cancel)

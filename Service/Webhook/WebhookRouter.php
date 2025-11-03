@@ -5,7 +5,7 @@ namespace Fintoc\Payment\Service\Webhook;
 
 use Fintoc\Payment\Api\Webhook\WebhookRouterInterface;
 use Fintoc\Payment\Api\Webhook\WebhookHandlerInterface;
-use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class WebhookRouter implements WebhookRouterInterface
 {

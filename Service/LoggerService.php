@@ -10,11 +10,12 @@ use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\LoggerServiceInterface;
 use Fintoc\Payment\Logger\Logger;
 use Monolog\Logger as MonologLogger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service for logging messages
  */
-class LoggerService implements LoggerServiceInterface
+class LoggerService implements LoggerServiceInterface, LoggerInterface
 {
     /**
      * @var Logger
@@ -49,7 +50,7 @@ class LoggerService implements LoggerServiceInterface
     /**
      * @inheritDoc
      */
-    public function notice($message, array $context = [])
+    public function notice(string|\Stringable $message, array $context = []): void
     {
         $this->log(MonologLogger::NOTICE, $message, $context);
     }

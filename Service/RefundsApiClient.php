@@ -7,7 +7,7 @@ use Fintoc\Payment\Api\ConfigurationServiceInterface as PaymentConfigServiceInte
 use Fintoc\Payment\Api\RefundsApiClientInterface;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
-use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
+use Psr\Log\LoggerInterface;
 use Fintoc\Payment\Service\ConfigurationService;
 use Fintoc\Payment\Utils\AmountUtils;
 

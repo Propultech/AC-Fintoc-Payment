@@ -13,7 +13,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\CreditmemoManagementInterface;
 use Magento\Sales\Model\Order\CreditmemoFactory;
 use Magento\Sales\Model\OrderFactory;
-use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class RefundSucceededHandler extends AbstractWebhookHandler
 {

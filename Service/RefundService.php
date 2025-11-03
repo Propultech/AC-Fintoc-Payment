@@ -13,7 +13,7 @@ use Fintoc\Payment\Api\TransactionServiceInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Api\Data\OrderInterface;
-use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 class RefundService implements RefundServiceInterface
 {

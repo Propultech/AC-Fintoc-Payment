@@ -30,7 +30,7 @@ use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Order\Invoice;
 use Magento\Sales\Model\OrderFactory;
 use Magento\Sales\Model\Service\InvoiceService;
-use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
+use Psr\Log\LoggerInterface;
 use Fintoc\Payment\Api\Webhook\WebhookRequestValidatorInterface;
 use Fintoc\Payment\Api\Webhook\WebhookRequestParserInterface;
 use Fintoc\Payment\Api\Webhook\WebhookIdempotencyServiceInterface;

@@ -20,7 +20,7 @@ use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
-use Psr\Log\LoggerInterface;
+use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
 use Fintoc\Payment\Service\ConfigurationService;
 use Fintoc\Payment\Api\Checkout\RequestBuilderInterface;
 

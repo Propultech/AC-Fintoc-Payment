@@ -8,8 +8,8 @@ namespace Fintoc\Payment\Service;
 
 use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\LoggerServiceInterface;
-use Fintoc\Payment\Logger\Logger;
 use Monolog\Logger as MonologLogger;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service for logging messages
@@ -17,7 +17,7 @@ use Monolog\Logger as MonologLogger;
 class LoggerService implements LoggerServiceInterface
 {
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -32,26 +32,19 @@ class LoggerService implements LoggerServiceInterface
     private $dataFilter;
 
     /**
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      * @param ConfigurationServiceInterface $configService
      * @param DataFilterService $dataFilter
      */
     public function __construct(
-        Logger                        $logger,
+        LoggerInterface               $logger,
         ConfigurationServiceInterface $configService,
         DataFilterService             $dataFilter
-    ) {
+    )
+    {
         $this->logger = $logger;
         $this->configService = $configService;
         $this->dataFilter = $dataFilter;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function notice($message, array $context = [])
-    {
-        $this->log(MonologLogger::NOTICE, $message, $context);
     }
 
     /**
@@ -87,6 +80,22 @@ class LoggerService implements LoggerServiceInterface
 
         // Log the message
         $this->logger->addRecord($level, $message, $context);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function info($message, array $context = [])
+    {
+        $this->log(MonologLogger::INFO, $message, $context);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function notice($message, array $context = []): void
+    {
+        $this->log(MonologLogger::NOTICE, $message, $context);
     }
 
     /**
@@ -132,18 +141,18 @@ class LoggerService implements LoggerServiceInterface
     /**
      * @inheritDoc
      */
-    public function logWebhook(string $eventType, array $data, array $context = [])
+    public function debug($message, array $context = [])
     {
-        $context = array_merge($context, ['event_type' => $eventType]);
-        $this->info('Webhook received: ' . $eventType, array_merge($context, ['data' => $data]));
+        $this->log(MonologLogger::DEBUG, $message, $context);
     }
 
     /**
      * @inheritDoc
      */
-    public function info($message, array $context = [])
+    public function logWebhook(string $eventType, array $data, array $context = [])
     {
-        $this->log(MonologLogger::INFO, $message, $context);
+        $context = array_merge($context, ['event_type' => $eventType]);
+        $this->info('Webhook received: ' . $eventType, array_merge($context, ['data' => $data]));
     }
 
     /**
@@ -157,14 +166,6 @@ class LoggerService implements LoggerServiceInterface
             'params' => $params
         ]);
         $this->debug('API Request: ' . $method . ' ' . $endpoint, $context);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function debug($message, array $context = [])
-    {
-        $this->log(MonologLogger::DEBUG, $message, $context);
     }
 
     /**

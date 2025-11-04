@@ -11,6 +11,7 @@ use Magento\Framework\Api\AttributeValueFactory;
 use Magento\Framework\Api\ExtensionAttributesFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Model\Context;
 use Magento\Framework\Model\ResourceModel\AbstractResource;
 use Magento\Framework\Registry;
@@ -115,7 +116,8 @@ class Payment extends AbstractMethod
         AbstractResource              $resource = null,
         AbstractDb                    $resourceCollection = null,
         array                         $data = []
-    ) {
+    )
+    {
         parent::__construct(
             $context,
             $registry,
@@ -154,6 +156,7 @@ class Payment extends AbstractMethod
      * @param string $paymentAction
      * @param object $stateObject
      * @return $this
+     * @throws NoSuchEntityException
      */
     public function initialize($paymentAction, $stateObject)
     {

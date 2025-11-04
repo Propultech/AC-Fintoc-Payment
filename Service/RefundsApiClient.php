@@ -5,11 +5,10 @@ namespace Fintoc\Payment\Service;
 
 use Fintoc\Payment\Api\ConfigurationServiceInterface as PaymentConfigServiceInterface;
 use Fintoc\Payment\Api\RefundsApiClientInterface;
+use Fintoc\Payment\Utils\AmountUtils;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
-use Fintoc\Payment\Service\ConfigurationService;
-use Fintoc\Payment\Utils\AmountUtils;
 
 /**
  * HTTP client for Fintoc Refunds API.
@@ -25,10 +24,11 @@ class RefundsApiClient implements RefundsApiClientInterface
     private $logger;
 
     public function __construct(
-        GuzzleClient $httpClient,
+        GuzzleClient                  $httpClient,
         PaymentConfigServiceInterface $configService,
-        LoggerInterface $logger
-    ) {
+        LoggerInterface               $logger
+    )
+    {
         $this->httpClient = $httpClient;
         $this->configService = $configService;
         $this->logger = $logger;

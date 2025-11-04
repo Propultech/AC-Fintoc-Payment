@@ -20,6 +20,7 @@ Key packages and components
   - TransactionRepositoryInterface: CRUD/searches over Transaction aggregate.
   - Data/TransactionInterface, Data/TransactionSearchResultsInterface: Entity contracts.
   - Webhook/*: WebhookRequestValidatorInterface, WebhookRequestParserInterface, WebhookIdempotencyServiceInterface, WebhookRouterInterface, WebhookHandlerInterface.
+  - Checkout/*: RequestBuilderInterface, MetadataBuilderInterface — extension points for building the checkout session payload and metadata.
 
 - Model/
   - Payment: Magento payment method model (extends Magento\Payment\Model\Method\AbstractMethod). Controls availability, initialization, store scoping.
@@ -38,9 +39,10 @@ Key packages and components
   - RefundsApiClient: Low-level HTTP client (Guzzle) for Fintoc refund endpoints (configured in etc/di.xml with timeout/http_errors).
   - RefundService: Business service orchestrating refund operations and Magento order state transitions.
   - Webhook/*: WebhookEvent (value object), WebhookRequestValidator, WebhookRequestParser, WebhookIdempotencyService, WebhookRouter, and Handler/* concrete handlers + shared AbstractWebhookHandler and AbstractPaymentIntentHandler.
+  - Checkout/*: RequestBuilder (default), MetadataBuilder (default) — default implementations behind the above Api contracts.
 
 - Controller/
-  - Checkout/Create: Creates the Fintoc checkout session and responds with redirect_url to the frontend.
+  - Checkout/Create: Creates the Fintoc checkout session using `RequestBuilderInterface` to compose the payload and responds with redirect_url to the frontend.
   - Checkout/Commit: Finalizes checkout session and handles success return.
   - Webhook/Index: CSRF-aware webhook endpoint performing signature validation, idempotency check, parse, then dispatches to router/handlers.
   - Adminhtml/*: Transactions grids and detail view; Refund create/cancel/save endpoints; Orders index (refunds eligible orders grid).

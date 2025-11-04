@@ -85,8 +85,8 @@ If your Magento serves multiple storefronts, configure Fintoc per scope so each 
    - customer_email
    - metadata: carries the Magento order increment ID
    - success_url and cancel_url:
-     - `{{baseUrl}}fintoc/checkout/commit/action/success/tr/<encrypted-transaction-id>`
-     - `{{baseUrl}}fintoc/checkout/commit/action/cancel/tr/<encrypted-transaction-id>`
+     - `{{baseUrl}}fintoc/checkout/commit/action/success/tr/<transaction-id>`
+     - `{{baseUrl}}fintoc/checkout/commit/action/cancel/tr/<transaction-id>`
 3) If the API responds with `redirect_url`, the customer is redirected to Fintoc’s hosted page.
 4) Return from Fintoc (commit controller):
    - action=success → marks transaction success, adds order history + payment additional information, and redirects to Magento success page.
@@ -254,3 +254,19 @@ Notes:
 - Do not include secrets or personal data in your report. Redact credentials, tokens, and customer information.
 - For security vulnerabilities, follow our security policy instead of opening a public issue (see SECURITY.md).
 
+
+
+## Extensibility
+
+To customize the JSON payload sent to Fintoc when creating a checkout session, use the following extension points (no controller overrides required):
+
+- Interfaces
+  - `Fintoc\Payment\Api\Checkout\RequestBuilderInterface`
+  - `Fintoc\Payment\Api\Checkout\MetadataBuilderInterface`
+- Default implementations
+  - `Fintoc\Payment\Service\Checkout\RequestBuilder`
+  - `Fintoc\Payment\Service\Checkout\MetadataBuilder`
+- How it’s used
+  - `Checkout/Create` controller calls `RequestBuilderInterface::build($order, $transactionId)` to compose the request payload (amount/currency, success/cancel URLs, customer email, and metadata via the Metadata Builder).
+- How to extend
+  - Register a plugin on either interface in your module’s `etc/di.xml` and implement an `afterBuild` (or `aroundBuild`) plugin to add/change fields. See examples in `docs/developer-guide.md`.

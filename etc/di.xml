@@ -13,6 +13,10 @@
     <!-- Configuration Service -->
     <preference for="Fintoc\Payment\Api\ConfigurationServiceInterface" type="Fintoc\Payment\Service\ConfigurationService" />
 
+    <!-- Checkout Builders -->
+    <preference for="Fintoc\Payment\Api\Checkout\RequestBuilderInterface" type="Fintoc\Payment\Service\Checkout\RequestBuilder" />
+    <preference for="Fintoc\Payment\Api\Checkout\MetadataBuilderInterface" type="Fintoc\Payment\Service\Checkout\MetadataBuilder" />
+
     <!-- Refund Services -->
     <preference for="Fintoc\Payment\Api\RefundServiceInterface" type="Fintoc\Payment\Service\RefundService" />
     <preference for="Fintoc\Payment\Api\RefundsApiClientInterface" type="Fintoc\Payment\Service\RefundsApiClient" />
@@ -88,7 +92,6 @@
             <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
         </arguments>
     </type>
-
     <type name="Fintoc\Payment\Logger\Logger">
         <arguments>
             <argument name="name" xsi:type="string">fintoc</argument>
@@ -111,14 +114,6 @@
         </arguments>
     </type>
 
-    <!-- Configure Webhook Controller -->
-    <type name="Fintoc\Payment\Controller\Webhook\Index">
-        <arguments>
-            <argument name="transactionService" xsi:type="object">Fintoc\Payment\Service\TransactionService</argument>
-            <argument name="logger" xsi:type="object">Fintoc\Payment\Logger\Logger</argument>
-        </arguments>
-    </type>
-
     <!-- Configure GuzzleHttp Client -->
     <type name="GuzzleHttp\Client">
         <arguments>
@@ -129,16 +124,8 @@
         </arguments>
     </type>
 
-    <!-- Configure Checkout Create Controller -->
-    <type name="Fintoc\Payment\Controller\Checkout\Create">
-        <arguments>
-            <argument name="httpClient" xsi:type="object">GuzzleHttp\Client</argument>
-            <argument name="logger" xsi:type="object">Fintoc\Payment\Logger\Logger</argument>
-        </arguments>
-    </type>
-
     <!-- Configure Checkout Commit Controller -->
-    <type name="Fintoc\Payment\Controller\Checkout\Commit">
+    <type name="Fintoc\Payment\Api\LoggerServiceInterface">
         <arguments>
             <argument name="logger" xsi:type="object">Fintoc\Payment\Logger\Logger</argument>
         </arguments>

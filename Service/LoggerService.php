@@ -8,9 +8,8 @@ namespace Fintoc\Payment\Service;
 
 use Fintoc\Payment\Api\ConfigurationServiceInterface;
 use Fintoc\Payment\Api\LoggerServiceInterface;
-use Fintoc\Payment\Logger\Logger;
 use Monolog\Logger as MonologLogger;
-use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Service for logging messages
@@ -18,7 +17,7 @@ use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
 class LoggerService implements LoggerServiceInterface
 {
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -33,7 +32,7 @@ class LoggerService implements LoggerServiceInterface
     private $dataFilter;
 
     /**
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      * @param ConfigurationServiceInterface $configService
      * @param DataFilterService $dataFilter
      */

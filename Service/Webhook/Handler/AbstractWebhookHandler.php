@@ -13,7 +13,7 @@ use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Quote\Api\CartRepositoryInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\OrderFactory;
-use Psr\Log\LoggerInterface;
+use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
 
 abstract class AbstractWebhookHandler
 {

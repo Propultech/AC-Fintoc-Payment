@@ -9,7 +9,7 @@ use Fintoc\Payment\Service\Webhook\WebhookEvent;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Sales\Model\OrderFactory;
-use Psr\Log\LoggerInterface;
+use Fintoc\Payment\Api\LoggerServiceInterface as LoggerInterface;
 
 class RefundFailedHandler extends AbstractWebhookHandler
 {

@@ -130,9 +130,22 @@ class PaymentIntentSucceededHandler extends AbstractPaymentIntentHandler
         if ($order->getState() === Order::STATE_PROCESSING) {
             $tx = $this->getFirstTransactionByOrder($orderId);
             if ($tx) {
+                $this->transactionService->updateTransactionStatus($tx, TransactionInterface::STATUS_SUCCESS, [
+                    'updated_by' => 'webhook',
+                    'error_message' => null,
+                ]);
                 $this->appendWebhookPayload($tx, $event, WebhookConstants::EV_PI_SUCCEEDED);
             }
-            $this->logger->debug('Order already processed: ' . $orderId);
+            // Ensure payment intent ID is stored even if order was already processed
+            // (e.g. invoice created before webhook arrived). Without this, refunds
+            // fall back to the internal transaction ID instead of the real pi_xxx ID.
+            $extra = [];
+            if (isset($pi['senderAccount'])) {
+                $extra['fintoc_sender_account'] = $this->json->serialize($pi['senderAccount']);
+            }
+            $this->setPiPaymentInfo($order, $pi, $extra);
+            $order->save();
+            $this->logger->debug('Order already processed, payment info updated: ' . $orderId);
             return;
         }
 

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- Copyright © Fintoc. -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- Restore cart when customer returns from Fintoc without completing payment -->
+    <type name="Magento\Checkout\Controller\Cart\Index">
+        <plugin name="fintoc_restore_quote_on_cart_load"
+                type="Fintoc\Payment\Plugin\RestoreQuoteOnCartLoad"
+                sortOrder="10" />
+    </type>
+</config>

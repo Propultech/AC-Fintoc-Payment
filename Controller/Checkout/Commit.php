@@ -250,57 +250,43 @@ class Commit extends Action
     {
         $resultRedirect = $this->resultRedirectFactory->create();
 
-        // Update transaction status
+        // Update Fintoc-side transaction status only.
+        // The order itself stays in its current state and is finalized by the webhook
+        // (checkout_session.expired / payment_intent.failed / payment_intent.succeeded)
+        // to avoid race conditions where the bank confirms the payment after the user
+        // returned via cancel_url.
         $this->transactionService->updateTransactionStatus(
             $transaction,
             TransactionInterface::STATUS_CANCELED,
             [
                 'updated_by' => 'commit_controller',
-                'error_message' => 'Payment canceled by customer'
+                'error_message' => 'Customer clicked cancel - awaiting webhook confirmation'
             ]
         );
 
-        // Cancel the order if it's not already canceled
-        if ($order->getState() !== Order::STATE_CANCELED) {
-            $order->cancel();
-            $order->addCommentToStatusHistory(
-                __(
-                    'Fintoc payment canceled by customer. Transaction ID: %1, Amount: %2 %3',
-                    $transaction->getTransactionId(),
-                    $transaction->getAmount(),
-                    $transaction->getCurrency()
-                )
-            );
+        $order->addCommentToStatusHistory(
+            __(
+                'Customer clicked cancel on Fintoc redirect. Order will be finalized by webhook. Transaction ID: %1',
+                $transaction->getTransactionId()
+            )
+        );
 
-            // Add additional payment information
-            $payment = $order->getPayment();
-            $payment->setAdditionalInformation('fintoc_transaction_status', TransactionInterface::STATUS_CANCELED);
-            $payment->setAdditionalInformation('fintoc_transaction_canceled_at', date('Y-m-d H:i:s'));
-            $payment->setAdditionalInformation('fintoc_cancel_reason', 'Payment canceled by customer');
-            $payment->save();
+        $payment = $order->getPayment();
+        $payment->setAdditionalInformation('fintoc_user_canceled_at', date('Y-m-d H:i:s'));
+        $payment->save();
+        $order->save();
 
-            $order->save();
-        }
-
-        // Log the cancellation
         $this->logger->info(
-            'Commit: Fintoc payment canceled',
+            'Commit: Customer clicked cancel, awaiting webhook',
             [
                 'transaction_id' => $transaction->getTransactionId(),
                 'order_id' => $order->getIncrementId(),
-            ]
-        );
-        $this->logger->debug(
-            'Commit: Fintoc payment canceled',
-            [
-                'transaction_id' => $transaction->getTransactionId(),
-                'order_id' => $order->getIncrementId(),
-                'request' => $this->getRequest()->getParams(),
             ]
         );
 
-        // Add a message
-        $this->messageManager->addErrorMessage(__('Your payment was canceled.'));
+        $this->messageManager->addNoticeMessage(
+            __('Your payment was canceled. We will confirm with the bank shortly.')
+        );
 
         // Restore quote to allow customer to retry checkout
         try {
@@ -309,7 +295,6 @@ class Commit extends Action
             $this->logger->debug('Commit: Restore quote failed on cancel: ' . $e->getMessage());
         }
 
-        // Redirect to failure page
         return $resultRedirect->setPath('checkout/cart');
     }
 }

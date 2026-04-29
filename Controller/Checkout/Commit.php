@@ -285,7 +285,7 @@ class Commit extends Action
         );
 
         $this->messageManager->addNoticeMessage(
-            __('Your payment was canceled. We will confirm with the bank shortly.')
+            __('You returned without completing the payment. Please wait for confirmation before retrying your purchase.')
         );
 
         // Restore quote to allow customer to retry checkout
